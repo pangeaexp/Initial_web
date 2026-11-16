@@ -460,23 +460,23 @@
     "followUs": "Follow Us",
     "allRightsReserved": "All rights reserved.",
     "scrollHint": "Look at the ball",
-    "sunHits": "Hits: {count}"
+    "sunHits": "Returns: {count}"
   },
   "comingSoon": "We’ll be launching the {section} section soon.",
   "sunGame": {
-    "title": "Catch the ball",
-    "instructions": "30 s · 5 in a row ×2 · 10 in a row ×3. A miss resets your streak.",
+    "title": "Return challenge",
+    "instructions": "Click or tap the ball to return it. 5 in a row ×2 · 10 ×3.",
     "play": "Play",
     "exit": "Exit",
-    "catch": "Catch the ball",
+    "catch": "Return the ball",
     "time": "Time: {seconds} s",
     "best": "Best: {count}",
     "finished": "Game over!",
     "replay": "Play again",
     "points": "Points: {count}",
-    "combo": "Streak: {count} · ×{multiplier}",
+    "combo": "Rally: {count} · ×{multiplier}",
     "level": "Level: {level}/5",
-    "bestStreak": "Best streak: {count}",
+    "bestStreak": "Best rally: {count}",
     "sound": "Game sound",
     "soundOn": "Sound: on",
     "soundOff": "Sound: off",
@@ -502,16 +502,16 @@
         "description": "Complete a 30-second round."
       },
       "combo": {
-        "title": "On a roll",
-        "description": "Get 10 hits in a row in one round."
+        "title": "Good rally",
+        "description": "Make 10 returns in a row in one round."
       },
       "precision": {
-        "title": "Sharp aim",
-        "description": "Finish with at least 10 hits and 90% accuracy."
+        "title": "Paddle control",
+        "description": "Finish with at least 10 returns and 90% accuracy."
       },
       "expert": {
-        "title": "Full speed",
-        "description": "Reach level 5 with 20 hits in one round."
+        "title": "Competition pace",
+        "description": "Reach level 5 with 20 returns in one round."
       }
     },
     "leaderboard": {
@@ -524,7 +524,7 @@
     "practice": {
       "play": "Practice",
       "title": "Free practice",
-      "instructions": "No time limit · Combos and levels enabled.",
+      "instructions": "Free rally practice, without a time limit. Click or tap the ball.",
       "notice": "Practice does not count towards records, medals or the leaderboard.",
       "finish": "Finish",
       "unlimited": "No limit",
@@ -532,12 +532,26 @@
       "finished": "Practice complete",
       "replay": "Practice again",
       "timed": "Play 30 seconds"
+    },
+    "menu": {
+      "title": "Joventut TT",
+      "hint": "Train your reflexes with Club Esportiu Joventut TT and choose your challenge.",
+      "timed": "30-second round",
+      "progress": "Your medals and best rounds",
+      "interrupted": "Preparation was cancelled. Choose a mode when you are ready."
+    },
+    "countdown": {
+      "ready": "Get ready",
+      "announcement": "The round starts in {count}"
+    },
+    "table": {
+      "label": "Joventut TT table tennis court"
     }
   },
   "sunHall": {
     "title": "Hall of Fame",
-    "rules": "30-second rounds, with no pauses or window changes. Combos ×2 and ×3.",
-    "intro": "Compete for the all-time top 10. Publishing your result is optional.",
+    "rules": "Table tennis challenge: 30 s, no pauses or window changes. Combos ×2 and ×3.",
+    "intro": "Represent Joventut TT in the top 10 return challenge. Publishing your result is optional.",
     "play": "Compete (30 s)",
     "preparing": "Preparing round…",
     "optional": "Want to publish your result? Use a nickname without personal details.",

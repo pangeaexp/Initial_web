@@ -3,6 +3,29 @@
 Clasificación histórica pública de diez resultados, ordenados por puntos, precisión,
 mejor racha y antigüedad. El apodo no identifica una cuenta: puede repetirse.
 Los modos local y práctica conservan sus propios resultados y comportamiento.
+El botón flotante «Jugar» abre un menú común con los tres modos y permite
+consultar las medallas y mejores partidas locales sin completar una partida nueva.
+
+## Identidad y mecánica de tenis de mesa
+
+El minijuego es un reto de reflejos del Club Esportiu Joventut TT: mesa con red,
+pelota blanca, pala roja del visitante y pala negra del rival virtual. Mover el
+puntero desplaza la pala; pulsar o tocar la pelota la devuelve hacia el rival.
+El contacto horizontal añade una pequeña variación de dirección. En móvil basta
+con tocar la pelota y se conserva la activación de la devolución por teclado.
+El puntero coincide con el centro de la goma; el cursor nativo se oculta dentro
+de la mesa durante el juego. Los golpes se detectan por contacto entre la cara
+de la pala y la pelota, incluso si el centro de la pala queda fuera del botón de
+la pelota. En el Salón se registran las coordenadas efectivas de la pala, también
+al alcanzar los bordes. La pala del botón de portada bota respetando la
+preferencia de movimiento reducido y se detiene mientras el menú está abierto.
+Los puntos, bonos, niveles y objetivos se mantienen como reglas del reto arcade.
+Los registros y medallas existentes se conservan en sus claves y tablas originales.
+
+La simulación compartida usa `rulesVersion: 2`. La API rechaza publicaciones
+de clientes con reglas anteriores y el cliente no inicia partidas contra un
+servidor incompatible. Esto evita reinterpretar una partida antigua con la nueva
+trayectoria. No se necesita una nueva migración SQL para esta adaptación.
 
 ## Partidas y publicación
 
@@ -11,6 +34,9 @@ Los modos local y práctica conservan sus propios resultados y comportamiento.
   acotado. El servidor genera una semilla y un token aleatorio de 256 bits. Solo
   guarda el hash del token, junto con el tablero, la fecha y el identificador
   de red resumido mediante SHA-256. Límite: doce inicios por hora e identificador.
+- Antes de cada partida se muestra una cuenta atrás de tres segundos. El reloj
+  de juego y los tiempos de pulsación empiezan después de esta preparación.
+  Ocultar la pestaña durante la preparación la cancela.
 - La partida dura 30 segundos activos, sin pausas. Ocultar la pestaña o cambiar
   el tamaño interrumpe la partida; también se comprueba una respuesta de inicio
   que llega después de ocultar la pestaña. Se mantiene el acceso por teclado.

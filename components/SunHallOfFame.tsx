@@ -3,12 +3,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from '@/lib/i18n'
-import { advanceGame, applyInput, BALL_SIZE, createGame, MAX_INPUTS, MIN_INPUT_GAP, ROUND_MS, type Challenge, type Game, type GameInput, type HallEntry } from '@/lib/sun-hall/game'
+import { advanceGame, applyInput, BALL_SIZE, createGame, MAX_INPUTS, MIN_INPUT_GAP, ROUND_MS, RULES_VERSION, type Challenge, type Game, type GameInput, type HallEntry } from '@/lib/sun-hall/game'
+import SunGameCountdown from '@/components/SunGameCountdown'
+import { TableTennisBall, TableTennisCourt, TableTennisPaddle } from '@/components/TableTennis'
+import { paddlePosition, paddleTransform } from '@/lib/table-tennis'
 
-type Phase = 'lobby' | 'starting' | 'playing' | 'finished' | 'published'
+type Phase = 'lobby' | 'starting' | 'countdown' | 'playing' | 'finished' | 'published'
 const errorCode = (code: unknown) => ['limited', 'expired', 'invalid'].includes(String(code)) ? String(code) : 'unavailable'
 
-export default function SunHallOfFame() {
+export default function SunHallOfFame({ className, onOpenChange }: { className?: string; onOpenChange?: (open: boolean) => void }) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [phase, setPhase] = useState<Phase>('lobby')
@@ -26,6 +29,8 @@ export default function SunHallOfFame() {
   const dialogRef = useRef<HTMLDialogElement>(null)
   const boardRef = useRef<HTMLDivElement>(null)
   const ballRef = useRef<HTMLButtonElement>(null)
+  const paddleRef = useRef<HTMLSpanElement>(null)
+  const opponentRef = useRef<HTMLSpanElement>(null)
   const resultRef = useRef<HTMLHeadingElement>(null)
   const phaseRef = useRef<Phase>('lobby')
   const challengeRef = useRef<Challenge | null>(null)
@@ -36,11 +41,18 @@ export default function SunHallOfFame() {
   const listEpochRef = useRef(0)
   const requestRef = useRef<AbortController | null>(null)
   const changePhase = useCallback((next: Phase) => { phaseRef.current = next; setPhase(next) }, [])
+  const beginRound = useCallback(() => {
+    if (phaseRef.current !== 'countdown') return
+    if (document.hidden) { challengeRef.current = null; setError('interrupted'); changePhase('lobby'); return }
+    startedRef.current = performance.now()
+    changePhase('playing')
+  }, [changePhase])
   const close = () => {
     epochRef.current++
     requestRef.current?.abort()
     challengeRef.current = null
     setOpen(false)
+    onOpenChange?.(false)
     changePhase('lobby')
     setPublishing(false)
   }
@@ -69,8 +81,12 @@ export default function SunHallOfFame() {
   useEffect(() => () => { requestRef.current?.abort() }, [])
 
   useEffect(() => {
-    if (phase !== 'playing') return
-    ballRef.current?.focus({ preventScroll: true })
+    if (phase !== 'playing' && phase !== 'countdown') return
+    if (phase === 'playing') {
+      ballRef.current?.focus({ preventScroll: true })
+      const game = gameRef.current
+      if (game && paddleRef.current) paddleRef.current.style.transform = paddleTransform(game.width / 2, game.height - 70, game.width, game.height)
+    }
     let animation = 0
     const step = () => {
       if (phaseRef.current !== 'playing' || !gameRef.current) return
@@ -78,13 +94,14 @@ export default function SunHallOfFame() {
       advanceGame(gameRef.current, elapsed)
       const game = gameRef.current
       if (ballRef.current) ballRef.current.style.transform = `translate3d(${game.x}px, ${game.y}px, 0)`
+      if (opponentRef.current) opponentRef.current.style.transform = paddleTransform(game.x + BALL_SIZE / 2, -8, game.width, game.height)
       const seconds = Math.max(0, Math.ceil((ROUND_MS - elapsed) / 1000))
       setRemaining((previous) => previous === seconds ? previous : seconds)
       if (elapsed >= ROUND_MS) { setStats({ ...game }); changePhase('finished'); return }
       animation = requestAnimationFrame(step)
     }
     const interrupt = () => {
-      if (phaseRef.current !== 'playing') return
+      if (phaseRef.current !== 'playing' && phaseRef.current !== 'countdown') return
       challengeRef.current = null
       setError('interrupted')
       changePhase('lobby')
@@ -93,7 +110,7 @@ export default function SunHallOfFame() {
     window.addEventListener('resize', interrupt)
     document.addEventListener('visibilitychange', visibility)
     visibility()
-    step()
+    if (phase === 'playing') step()
     return () => {
       cancelAnimationFrame(animation)
       window.removeEventListener('resize', interrupt)
@@ -104,7 +121,7 @@ export default function SunHallOfFame() {
   useEffect(() => { if (phase === 'finished') resultRef.current?.focus({ preventScroll: true }) }, [phase])
 
   const start = async () => {
-    if (phaseRef.current === 'starting' || phaseRef.current === 'playing') return
+    if (phaseRef.current === 'starting' || phaseRef.current === 'countdown' || phaseRef.current === 'playing') return
     const board = boardRef.current
     if (!board) return
     const width = Math.floor(board.clientWidth), height = Math.floor(board.clientHeight)
@@ -120,6 +137,7 @@ export default function SunHallOfFame() {
       const data = await response.json()
       if (epoch !== epochRef.current) return
       if (!response.ok) { setError(errorCode(data.error)); changePhase('lobby'); return }
+      if (data.rulesVersion !== RULES_VERSION) { setError('unavailable'); changePhase('lobby'); return }
       if (document.hidden || board.clientWidth !== width || board.clientHeight !== height) {
         challengeRef.current = null
         setError('interrupted'); changePhase('lobby'); return
@@ -128,9 +146,8 @@ export default function SunHallOfFame() {
       challengeRef.current = challenge
       gameRef.current = createGame(challenge, challenge.seed)
       inputsRef.current = []
-      startedRef.current = performance.now()
       setStats({ ...gameRef.current })
-      changePhase('playing')
+      changePhase('countdown')
     } catch {
       if (epoch === epochRef.current) { setError('unavailable'); changePhase('lobby') }
     }
@@ -141,8 +158,10 @@ export default function SunHallOfFame() {
     const time = Math.max(0, Math.floor(performance.now() - startedRef.current))
     const previous = inputsRef.current.at(-1)
     if (time >= ROUND_MS || (previous && time - previous.t < MIN_INPUT_GAP) || inputsRef.current.length >= MAX_INPUTS) return
-    const input = { t: time, x: Math.max(0, Math.min(x, gameRef.current.width)), y: Math.max(0, Math.min(y, gameRef.current.height)) }
+    const point = paddlePosition(x, y, gameRef.current.width, gameRef.current.height)
+    const input = { t: time, x: point.x, y: point.y }
     applyInput(gameRef.current, input)
+    if (paddleRef.current) paddleRef.current.style.transform = point.transform
     inputsRef.current.push(input)
     setStats({ ...gameRef.current })
   }
@@ -158,7 +177,7 @@ export default function SunHallOfFame() {
     requestRef.current = controller
     try {
       const response = await fetch('/api/sun-hall/publish', { method: 'POST', signal: controller.signal, headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: challengeRef.current.token, alias: name, consent: true, inputs: inputsRef.current }) })
+        body: JSON.stringify({ rulesVersion: RULES_VERSION, token: challengeRef.current.token, alias: name, consent: true, inputs: inputsRef.current }) })
       const data = await response.json()
       if (epoch !== epochRef.current) return
       if (!response.ok) { setError(errorCode(data.error)); return }
@@ -169,29 +188,37 @@ export default function SunHallOfFame() {
   }
 
   const showResult = phase === 'finished' || phase === 'published'
+  const movePaddle = (clientX: number, clientY: number) => {
+    if (phaseRef.current !== 'playing' || !boardRef.current || !paddleRef.current) return
+    const board = boardRef.current, rect = board.getBoundingClientRect()
+    paddleRef.current.style.transform = paddleTransform(clientX - rect.left - board.clientLeft, clientY - rect.top - board.clientTop, board.clientWidth, board.clientHeight)
+  }
   return <>
-    <button ref={launchRef} type="button" onClick={() => { setError(''); setOpen(true) }} className="rounded-full border border-primary/30 bg-background/95 px-3 py-2 text-sm font-semibold text-foreground shadow-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">{t('sunHall.title')}</button>
+    <button ref={launchRef} type="button" onClick={() => { setError(''); setOpen(true); onOpenChange?.(true) }} className={className ?? 'rounded-full border border-primary/30 bg-background/95 px-3 py-2 text-sm font-semibold text-foreground shadow-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary'}>{t('sunHall.title')}</button>
     {open && createPortal(
-      <dialog ref={dialogRef} aria-labelledby="sun-hall-title" onCancel={(event) => { event.preventDefault(); close() }} className="fixed inset-0 m-0 h-dvh max-h-none w-screen max-w-none overflow-y-auto border-0 bg-background/20 p-0 text-foreground backdrop:bg-black/10">
+      <dialog ref={dialogRef} aria-labelledby="sun-hall-title" onCancel={(event) => { event.preventDefault(); event.stopPropagation(); close() }} className="fixed inset-0 m-0 h-dvh max-h-none w-screen max-w-none overflow-y-auto border-0 bg-background/20 p-0 text-foreground backdrop:bg-black/10">
         <header className="sticky top-0 z-30 flex items-start justify-between gap-3 border-b border-foreground/10 bg-background/95 p-4 backdrop-blur-sm">
           <div><h2 id="sun-hall-title" className="text-lg font-bold">{t('sunHall.title')}</h2><p className="mt-1 text-xs text-foreground/70">{t('sunHall.rules')}</p></div>
           <button type="button" onClick={close} className="shrink-0 rounded-full border border-foreground/20 px-4 py-2 text-sm">{t('sunGame.exit')}</button>
         </header>
         <main className="mx-auto w-full max-w-3xl space-y-5 p-4">
           {error && <p role="alert" className="rounded-xl bg-background/95 p-3 text-sm font-semibold">{t(`sunHall.errors.${error}`)}</p>}
-          {phase === 'playing' && <div className="flex justify-between rounded-xl bg-background/95 p-3 text-sm font-bold tabular-nums"><span role="status">{t('sunGame.points', { count: stats?.points ?? 0 })}</span><span>{t('sunGame.combo', { count: stats?.streak ?? 0, multiplier: Math.min(3, 1 + Math.floor((stats?.streak ?? 0) / 5)) })}</span><span className={remaining <= 5 ? 'text-red-500' : ''}>{t('sunGame.time', { seconds: remaining })}</span></div>}
-          <div ref={boardRef} hidden={showResult} onPointerDown={(event) => {
+          {(phase === 'playing' || phase === 'countdown') && <div className="flex justify-between rounded-xl bg-background/95 p-3 text-sm font-bold tabular-nums"><span role="status">{t('sunGame.points', { count: stats?.points ?? 0 })}</span><span>{t('sunGame.combo', { count: stats?.streak ?? 0, multiplier: Math.min(3, 1 + Math.floor((stats?.streak ?? 0) / 5)) })}</span><span className={remaining <= 5 ? 'text-red-500' : ''}>{t('sunGame.time', { seconds: remaining })}</span></div>}
+          <div ref={boardRef} role="region" aria-label={t('sunGame.table.label')} hidden={showResult} onPointerMove={(event) => movePaddle(event.clientX, event.clientY)} onPointerDown={(event) => {
             if (event.button !== 0 || !boardRef.current) return
             const board = boardRef.current, rect = board.getBoundingClientRect()
+            movePaddle(event.clientX, event.clientY)
             contact(event.clientX - rect.left - board.clientLeft, event.clientY - rect.top - board.clientTop)
-          }} className="relative mx-auto h-[min(50dvh,400px)] min-h-[180px] w-full max-w-[720px] overflow-hidden rounded-2xl border border-primary/30 bg-background/40">
-            {phase === 'playing' ? <button ref={ballRef} type="button" aria-label={t('sunGame.catch')} onClick={(event) => {
+          }} className={`relative mx-auto h-[min(50dvh,400px)] min-h-[180px] w-full max-w-[720px] overflow-hidden rounded-2xl border border-white/70 bg-[#0c544d]/85 shadow-xl ${phase === 'playing' ? 'cursor-none touch-none' : ''}`}>
+            <TableTennisCourt />
+            <span ref={opponentRef} aria-hidden="true" hidden={phase !== 'playing'} className="pointer-events-none absolute left-0 top-0"><TableTennisPaddle opponent /></span>
+            <span ref={paddleRef} aria-hidden="true" hidden={phase !== 'playing'} className="pointer-events-none absolute left-0 top-0"><TableTennisPaddle /></span>
+            {phase === 'countdown' ? <div className="flex h-full items-center justify-center p-4"><SunGameCountdown onComplete={beginRound} /></div> : phase === 'playing' ? <button ref={ballRef} type="button" aria-label={t('sunGame.catch')} onClick={(event) => {
               if (event.detail !== 0 || !gameRef.current) return
               advanceGame(gameRef.current, Math.max(0, Math.floor(performance.now() - startedRef.current)))
               contact(gameRef.current.x + BALL_SIZE / 2, gameRef.current.y + BALL_SIZE / 2)
-            }} className="absolute left-0 top-0 cursor-pointer touch-none rounded-full focus-visible:outline-2 focus-visible:outline-primary" style={{ width: BALL_SIZE, height: BALL_SIZE }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/sun/sol6.png" alt="" width={BALL_SIZE} height={BALL_SIZE} draggable={false} className="pointer-events-none" />
+            }} className="absolute left-0 top-0 cursor-none touch-none rounded-full focus-visible:outline-2 focus-visible:outline-white" style={{ width: BALL_SIZE, height: BALL_SIZE }}>
+              <TableTennisBall />
             </button> : <div className="flex h-full flex-col items-center justify-center gap-4 p-5 text-center"><p className="max-w-sm rounded-xl bg-background/90 p-3 text-sm">{t('sunHall.intro')}</p><button type="button" disabled={phase === 'starting'} onClick={() => void start()} className="rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground disabled:opacity-50">{t(phase === 'starting' ? 'sunHall.preparing' : 'sunHall.play')}</button></div>}
           </div>
           {showResult && <section className="rounded-2xl border border-primary/20 bg-background/95 p-5">
@@ -207,7 +234,7 @@ export default function SunHallOfFame() {
             </form>}
             <button type="button" disabled={publishing} onClick={() => { challengeRef.current = null; setError(''); changePhase('lobby') }} className="mt-4 rounded-full border border-foreground/20 px-5 py-2 text-sm font-semibold">{t('sunGame.replay')}</button>
           </section>}
-          {phase !== 'playing' && phase !== 'starting' && <section aria-label={t('sunHall.top')} className="rounded-2xl border border-foreground/10 bg-background/95 p-5">
+          {phase !== 'playing' && phase !== 'starting' && phase !== 'countdown' && <section aria-label={t('sunHall.top')} className="rounded-2xl border border-foreground/10 bg-background/95 p-5">
             <div className="flex items-center justify-between gap-3"><h3 className="font-bold">{t('sunHall.top')}</h3><button type="button" onClick={() => setRefresh((value) => value + 1)} disabled={loadState === 'loading'} className="rounded-full border border-foreground/20 px-3 py-2 text-xs">{t('sunHall.refresh')}</button></div>
             {loadState === 'loading' ? <p role="status" className="mt-4 text-sm">{t('sunHall.loading')}</p> : loadState === 'error' ? <p role="alert" className="mt-4 text-sm">{t('sunHall.errors.unavailable')}</p> : entries.length === 0 ? <p className="mt-4 text-sm text-foreground/70">{t('sunHall.empty')}</p> : <ol className="mt-4 space-y-2">{entries.map((entry, index) => <li key={entry.id} aria-current={publishedId === entry.id ? 'true' : undefined} className={`flex items-center gap-3 rounded-xl border p-3 ${publishedId === entry.id ? 'border-primary/40 bg-primary/10' : 'border-foreground/10'}`}><span className="text-lg font-black">{index + 1}</span><div className="min-w-0 flex-1"><p className="break-words text-sm font-bold">{entry.alias}</p><p className="mt-1 text-xs text-foreground/70">{t('sunGame.accuracy', { percent: Math.round(entry.accuracy) })} · {t('sunGame.bestStreak', { count: entry.best_streak })}</p></div><span className="text-sm font-black tabular-nums">{entry.points}</span></li>)}</ol>}
           </section>}

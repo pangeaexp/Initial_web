@@ -12,10 +12,10 @@ jest.mock('@/lib/sun-hall/server', () => {
 const request = (data: unknown, origin = 'http://localhost') => new Request('http://localhost/api/sun-hall', {
   method: 'POST', headers: { origin, 'content-type': 'application/json' }, body: JSON.stringify(data),
 })
-const valid = { token: 'a'.repeat(64), alias: 'Pilota_7', consent: true, inputs: [] }
+const valid = { rulesVersion: 2, token: 'a'.repeat(64), alias: 'Pilota_7', consent: true, inputs: [] }
 beforeEach(() => {
   jest.mocked(getHall).mockResolvedValue([])
-  jest.mocked(issueChallenge).mockResolvedValue({ token: 'a'.repeat(64), seed: 1, width: 480, height: 300 })
+  jest.mocked(issueChallenge).mockResolvedValue({ rulesVersion: 2, token: 'a'.repeat(64), seed: 1, width: 480, height: 300 })
   jest.mocked(publishScore).mockResolvedValue({ id: 'score-id', entries: [] })
 })
 afterEach(() => jest.resetAllMocks())

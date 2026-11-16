@@ -2,7 +2,7 @@ import 'server-only'
 import { createHash, randomBytes, randomInt } from 'node:crypto'
 import { createClient } from '@supabase/supabase-js'
 import { requireSupabaseAdminConfig } from '@/lib/supabase/env'
-import { replayGame, type Board, type GameInput, type HallEntry } from './game'
+import { replayGame, RULES_VERSION, type Board, type GameInput, type HallEntry } from './game'
 
 function client() {
   const { url, serviceRoleKey } = requireSupabaseAdminConfig()
@@ -31,7 +31,7 @@ export async function issueChallenge(board: Board, request: Request) {
   })
   if (error?.message.includes('rate_limited')) throw new HallError('limited', 429)
   if (error) throw error
-  return { ...board, token, seed }
+  return { ...board, token, seed, rulesVersion: RULES_VERSION }
 }
 
 export async function publishScore(token: string, alias: string, inputs: GameInput[]) {

@@ -460,23 +460,23 @@
     "followUs": "Segueix-nos",
     "allRightsReserved": "Tots els drets reservats.",
     "scrollHint": "Mira la pilota",
-    "sunHits": "Encerts: {count}"
+    "sunHits": "Devolucions: {count}"
   },
   "comingSoon": "Aviat activarem la secció de {section}.",
   "sunGame": {
-    "title": "Atrapa la pilota",
-    "instructions": "30 s · 5 seguits ×2 · 10 seguits ×3. Fallar reinicia la ratxa.",
+    "title": "Repte de devolucions",
+    "instructions": "Prem o toca la pilota per tornar-la. 5 seguides ×2 · 10 ×3.",
     "play": "Jugar",
     "exit": "Sortir",
-    "catch": "Atrapar la pilota",
+    "catch": "Tornar la pilota",
     "time": "Temps: {seconds} s",
     "best": "Rècord: {count}",
     "finished": "Partida acabada!",
     "replay": "Tornar a jugar",
     "points": "Punts: {count}",
-    "combo": "Ratxa: {count} · ×{multiplier}",
+    "combo": "Intercanvi: {count} · ×{multiplier}",
     "level": "Nivell: {level}/5",
-    "bestStreak": "Millor ratxa: {count}",
+    "bestStreak": "Millor intercanvi: {count}",
     "sound": "So del joc",
     "soundOn": "So: sí",
     "soundOff": "So: no",
@@ -502,16 +502,16 @@
         "description": "Completa una partida de 30 segons."
       },
       "combo": {
-        "title": "En ratxa",
-        "description": "Aconsegueix 10 encerts seguits en una partida."
+        "title": "Bon intercanvi",
+        "description": "Encadena 10 devolucions en una partida."
       },
       "precision": {
-        "title": "Bona punteria",
-        "description": "Acaba amb almenys 10 encerts i un 90% de precisió o més."
+        "title": "Control de pala",
+        "description": "Acaba amb almenys 10 devolucions i un 90% de precisió o més."
       },
       "expert": {
-        "title": "Màxima velocitat",
-        "description": "Arriba al nivell 5 amb 20 encerts en una partida."
+        "title": "Ritme de competició",
+        "description": "Arriba al nivell 5 amb 20 devolucions en una partida."
       }
     },
     "leaderboard": {
@@ -524,7 +524,7 @@
     "practice": {
       "play": "Practicar",
       "title": "Pràctica lliure",
-      "instructions": "Sense límit de temps · Combos i nivells actius.",
+      "instructions": "Intercanvi lliure, sense límit de temps. Prem o toca la pilota.",
       "notice": "La pràctica no compta per a rècords, medalles ni classificació.",
       "finish": "Acabar",
       "unlimited": "Sense límit",
@@ -532,12 +532,26 @@
       "finished": "Pràctica acabada",
       "replay": "Tornar a practicar",
       "timed": "Jugar 30 segons"
+    },
+    "menu": {
+      "title": "Joventut TT",
+      "hint": "Entrena els teus reflexos amb el Club Esportiu Joventut TT i tria el teu repte.",
+      "timed": "Partida de 30 segons",
+      "progress": "Els teus assoliments i millors partides",
+      "interrupted": "La preparació s’ha cancel·lat. Tria un mode quan estiguis a punt."
+    },
+    "countdown": {
+      "ready": "Prepara’t",
+      "announcement": "La partida comença en {count}"
+    },
+    "table": {
+      "label": "Taula de tennis de taula de Joventut TT"
     }
   },
   "sunHall": {
     "title": "Saló de la fama",
-    "rules": "Partides de 30 segons, sense pauses ni canvis de finestra. Combos ×2 i ×3.",
-    "intro": "Competeix per entrar al top 10 històric. Publicar el resultat és opcional.",
+    "rules": "Repte de tennis de taula: 30 s, sense pauses ni canvis de finestra. Combos ×2 i ×3.",
+    "intro": "Representa el Joventut TT al top 10 de devolucions. Publicar el resultat és opcional.",
     "play": "Competir (30 s)",
     "preparing": "Preparant la partida…",
     "optional": "Vols publicar el resultat? Fes servir un àlies, sense dades personals.",

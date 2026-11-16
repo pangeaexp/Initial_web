@@ -7,9 +7,13 @@ import { ACHIEVEMENT_IDS, ACHIEVEMENTS_KEY, earnedAchievements, readAchievements
 import { LEADERBOARD_KEY, rankScores, readLeaderboard, type ScoreEntry } from '@/lib/sun-game-leaderboard'
 import SunGameLeaderboard from '@/components/SunGameLeaderboard'
 import SunHallOfFame from '@/components/SunHallOfFame'
+import SunGameCountdown from '@/components/SunGameCountdown'
+import SunGameMedals from '@/components/SunGameMedals'
+import { TableTennisBall, TableTennisCourt, TableTennisPaddle } from '@/components/TableTennis'
+import { paddleHitsBall, paddlePosition, paddleTransform, returnTableBall } from '@/lib/table-tennis'
 
 type Props = { size?: number; className?: string }
-type Phase = 'idle' | 'playing' | 'paused' | 'finished'
+type Phase = 'idle' | 'menu' | 'countdown' | 'playing' | 'paused' | 'finished'
 type Mode = 'timed' | 'practice'
 type Motion = { x: number; y: number; vx: number; vy: number }
 const DURATION = 30
@@ -42,11 +46,15 @@ export default function SunBouncing({ size = 40, className }: Props) {
   const [newAchievements, setNewAchievements] = useState<AchievementId[]>([])
   const [leaderboard, setLeaderboard] = useState<ScoreEntry[]>([])
   const [currentRank, setCurrentRank] = useState<number | null>(null)
+  const [preparationInterrupted, setPreparationInterrupted] = useState(false)
+  const [hallOpen, setHallOpen] = useState(false)
   const dialogRef = useRef<HTMLDialogElement>(null)
   const hudRef = useRef<HTMLDivElement>(null)
   const ballRef = useRef<HTMLButtonElement>(null)
+  const courtRef = useRef<HTMLDivElement>(null)
+  const paddleRef = useRef<HTMLSpanElement>(null)
+  const opponentRef = useRef<HTMLSpanElement>(null)
   const launchRef = useRef<HTMLButtonElement>(null)
-  const practiceLaunchRef = useRef<HTMLButtonElement>(null)
   const resumeRef = useRef<HTMLButtonElement>(null)
   const phaseRef = useRef<Phase>('idle')
   const modeRef = useRef<Mode>('timed')
@@ -62,12 +70,20 @@ export default function SunBouncing({ size = 40, className }: Props) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const gameSize = Math.max(44, size)
   const isOpen = phase !== 'idle'
+  const hasHud = isOpen && phase !== 'menu'
   const accuracy = hits + misses > 0 ? Math.round(hits / (hits + misses) * 100) : 0
 
   const changePhase = useCallback((next: Phase) => {
     phaseRef.current = next
     setPhase(next)
   }, [])
+
+  const beginRound = useCallback(() => {
+    if (phaseRef.current !== 'countdown') return
+    if (document.hidden) { setPreparationInterrupted(true); changePhase('menu'); return }
+    deadlineRef.current = modeRef.current === 'timed' ? Date.now() + DURATION * 1000 : Infinity
+    changePhase('playing')
+  }, [changePhase])
 
   const finish = useCallback(() => {
     const canFinish = phaseRef.current === 'playing' || (modeRef.current === 'practice' && phaseRef.current === 'paused')
@@ -130,10 +146,14 @@ export default function SunBouncing({ size = 40, className }: Props) {
   }
 
   useEffect(() => {
-    const onVisibilityChange = () => { if (document.hidden) pause() }
+    const onVisibilityChange = () => {
+      if (!document.hidden) return
+      if (phaseRef.current === 'countdown') { setPreparationInterrupted(true); changePhase('menu') }
+      else pause()
+    }
     document.addEventListener('visibilitychange', onVisibilityChange)
     return () => document.removeEventListener('visibilitychange', onVisibilityChange)
-  }, [pause])
+  }, [pause, changePhase])
 
   useEffect(() => {
     if (phase === 'paused') resumeRef.current?.focus({ preventScroll: true })
@@ -142,8 +162,14 @@ export default function SunBouncing({ size = 40, className }: Props) {
   useEffect(() => {
     if (!isOpen) return
     const dialog = dialogRef.current
-    const launch = modeRef.current === 'practice' ? practiceLaunchRef.current : launchRef.current
+    const launch = launchRef.current
     dialog?.showModal()
+    return () => { dialog?.close(); launch?.focus({ preventScroll: true }) }
+  }, [isOpen])
+
+  useEffect(() => {
+    if (!hasHud) return
+    const dialog = dialogRef.current
     const hud = hudRef.current
     const updateLayout = () => {
       if (hud) dialog?.style.setProperty('--sun-game-hud-height', `${hud.getBoundingClientRect().height}px`)
@@ -153,10 +179,8 @@ export default function SunBouncing({ size = 40, className }: Props) {
     if (hud) observer.observe(hud)
     return () => {
       observer.disconnect()
-      dialog?.close()
-      launch?.focus({ preventScroll: true })
     }
-  }, [isOpen])
+  }, [hasHud])
 
   useEffect(() => {
     if (phase !== 'playing') return
@@ -165,12 +189,15 @@ export default function SunBouncing({ size = 40, className }: Props) {
     ball.focus({ preventScroll: true })
     if (!motionRef.current) {
       const angle = Math.PI / 4 + Math.random() * Math.PI / 2
+      const width = courtRef.current?.clientWidth || window.innerWidth
+      const height = courtRef.current?.clientHeight || Math.max(160, window.innerHeight - 200)
       motionRef.current = {
-        x: Math.max(16, (window.innerWidth - gameSize) / 2),
-        y: Math.max(140, window.innerHeight / 2),
+        x: Math.max(0, (width - gameSize) / 2),
+        y: Math.max(0, (height - gameSize) * 0.55),
         vx: Math.cos(angle) * 220,
         vy: Math.sin(angle) * 220,
       }
+      if (paddleRef.current) paddleRef.current.style.transform = paddleTransform(width / 2, height - 70, width, height)
     }
     const motion = motionRef.current
     ball.style.transform = `translate3d(${motion.x}px, ${motion.y}px, 0)`
@@ -187,16 +214,17 @@ export default function SunBouncing({ size = 40, className }: Props) {
       // Delta time keeps the same speed on different refresh rates.
       const dt = Math.min((now - previous) / 1000, 0.05)
       previous = now
-      const maxX = Math.max(8, window.innerWidth - gameSize - 8)
-      const hudBottom = hudRef.current?.getBoundingClientRect().bottom ?? 132
-      const minY = Math.min(hudBottom + 8, Math.max(8, window.innerHeight - gameSize - 8))
-      const maxY = Math.max(minY, window.innerHeight - gameSize - 16)
+      const width = courtRef.current?.clientWidth || window.innerWidth
+      const height = courtRef.current?.clientHeight || Math.max(160, window.innerHeight - 200)
+      const maxX = Math.max(0, width - gameSize)
+      const maxY = Math.max(0, height - gameSize)
       const speed = 1 + (levelFor(statsRef.current.hits) - 1) * 0.15
       motion.x += motion.vx * dt * speed
       motion.y += motion.vy * dt * speed
-      if (motion.x <= 8 || motion.x >= maxX) { motion.x = Math.max(8, Math.min(motion.x, maxX)); motion.vx *= -1 }
-      if (motion.y <= minY || motion.y >= maxY) { motion.y = Math.max(minY, Math.min(motion.y, maxY)); motion.vy *= -1 }
+      if (motion.x <= 0 || motion.x >= maxX) { motion.x = Math.max(0, Math.min(motion.x, maxX)); motion.vx *= -1 }
+      if (motion.y <= 0 || motion.y >= maxY) { motion.y = Math.max(0, Math.min(motion.y, maxY)); motion.vy *= -1 }
       ball.style.transform = `translate3d(${motion.x}px, ${motion.y}px, 0)`
+      if (opponentRef.current) opponentRef.current.style.transform = paddleTransform(motion.x + gameSize / 2, -8, width, height)
       animation = requestAnimationFrame(step)
     }
     animation = requestAnimationFrame(step)
@@ -208,6 +236,22 @@ export default function SunBouncing({ size = 40, className }: Props) {
     audioRef.current?.pause()
   }, [])
 
+  const loadProgress = () => {
+    bestRef.current = Math.max(readRecord(), bestRef.current)
+    setBest(bestRef.current)
+    const savedAchievements = readAchievements()
+    achievementsRef.current = ACHIEVEMENT_IDS.filter((id) => achievementsRef.current.includes(id) || savedAchievements.includes(id))
+    setAchievements(achievementsRef.current)
+    leaderboardRef.current = rankScores([...readLeaderboard(), ...leaderboardRef.current])
+    setLeaderboard(leaderboardRef.current)
+  }
+
+  const openMenu = () => {
+    loadProgress()
+    setPreparationInterrupted(false)
+    changePhase('menu')
+  }
+
   const start = (nextMode: Mode) => {
     modeRef.current = nextMode
     setMode(nextMode)
@@ -215,18 +259,13 @@ export default function SunBouncing({ size = 40, className }: Props) {
     motionRef.current = null
     pausedTimeRef.current = 0
     statsRef.current = INITIAL_STATS
-    deadlineRef.current = nextMode === 'timed' ? Date.now() + DURATION * 1000 : Infinity
+    deadlineRef.current = Infinity
     setStats(INITIAL_STATS)
     setRemaining(DURATION)
-    bestRef.current = Math.max(readRecord(), bestRef.current)
-    setBest(bestRef.current)
+    loadProgress()
     setNewRecord(false)
-    const savedAchievements = readAchievements()
-    achievementsRef.current = ACHIEVEMENT_IDS.filter((id) => achievementsRef.current.includes(id) || savedAchievements.includes(id))
-    setAchievements(achievementsRef.current)
     setNewAchievements([])
-    leaderboardRef.current = rankScores([...readLeaderboard(), ...leaderboardRef.current])
-    setLeaderboard(leaderboardRef.current)
+    setPreparationInterrupted(false)
     setCurrentRank(null)
     setFeedback(0)
     if (feedbackTimer.current !== null) clearTimeout(feedbackTimer.current)
@@ -234,12 +273,15 @@ export default function SunBouncing({ size = 40, className }: Props) {
       audioRef.current = new Audio('/sounds/pop.mp3')
       audioRef.current.volume = 0.4
     }
-    changePhase('playing')
+    changePhase('countdown')
   }
 
-  const hit = () => {
+  const hit = (offset = 0) => {
     if (phaseRef.current !== 'playing') return
     if (Date.now() >= deadlineRef.current) { finish(); return }
+    if (motionRef.current) {
+      returnTableBall(motionRef.current, offset)
+    }
     const previous = statsRef.current
     const nextStreak = previous.streak + 1
     const earned = multiplierFor(nextStreak)
@@ -275,20 +317,46 @@ export default function SunBouncing({ size = 40, className }: Props) {
     if (soundEnabled) audioRef.current?.pause()
   }
 
+  const movePaddle = (clientX: number, clientY: number) => {
+    if (phaseRef.current !== 'playing' || !courtRef.current || !paddleRef.current) return
+    const court = courtRef.current, rect = court.getBoundingClientRect()
+    const point = paddlePosition(clientX - rect.left - court.clientLeft, clientY - rect.top - court.clientTop,
+      court.clientWidth || window.innerWidth, court.clientHeight || Math.max(160, window.innerHeight - 200))
+    paddleRef.current.style.transform = point.transform
+    return point
+  }
+
   return (
-    <div className={`relative inline-flex max-w-[calc(100vw-4rem)] flex-wrap items-center justify-end gap-2 select-none ${className ?? ''}`}>
-      <button ref={launchRef} type="button" onClick={() => start('timed')} className="flex items-center gap-2 rounded-full bg-background/95 px-3 py-2 text-sm font-semibold text-foreground shadow-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/sun/sol6.png" alt="" width={size} height={size} draggable={false} className="motion-safe:animate-bounce" />
+    <div className={`relative inline-flex select-none ${className ?? ''}`}>
+      <button ref={launchRef} type="button" onClick={openMenu} aria-haspopup="dialog" aria-expanded={isOpen} className="flex items-center gap-2 rounded-full bg-background/95 px-3 py-2 text-sm font-semibold text-foreground shadow-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
+        <span aria-hidden="true" className={`relative ${!isOpen ? 'motion-safe:animate-bounce' : ''}`} style={{ width: size, height: size }}><TableTennisPaddle className="h-full w-full" /><span className="absolute right-0 top-0 size-3 rounded-full bg-white shadow-sm" /></span>
         {t('sunGame.play')}
       </button>
-      <button ref={practiceLaunchRef} type="button" onClick={() => start('practice')} title={t('sunGame.practice.notice')} className="rounded-full border border-foreground/20 bg-background/95 px-3 py-2 text-sm font-semibold text-foreground shadow-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">{t('sunGame.practice.play')}</button>
-      <SunHallOfFame />
       {phase !== 'idle' && createPortal(
         <dialog ref={dialogRef} aria-labelledby="sun-game-title" onCancel={(event) => { event.preventDefault(); exit() }} onPointerDown={(event) => {
           // Only contact with the playfield breaks a combo, never release or HUD controls.
           if (event.button === 0 && event.target === event.currentTarget) miss()
         }} className="fixed inset-0 m-0 h-dvh max-h-none w-screen max-w-none overflow-hidden border-0 bg-background/20 p-0 text-foreground backdrop:bg-black/10">
+          {phase === 'menu' ? (
+            <div className={`h-full overflow-y-auto px-6 py-8 ${hallOpen ? 'opacity-0' : ''}`}>
+              <section className="mx-auto w-full max-w-md rounded-3xl border border-primary/20 bg-background/95 p-6 shadow-xl">
+                <div className="flex items-center justify-between gap-3"><h2 id="sun-game-title" className="text-xl font-bold">{t('sunGame.menu.title')}</h2><button type="button" onClick={exit} className="rounded-full border border-foreground/20 px-4 py-2 text-sm">{t('sunGame.exit')}</button></div>
+                <p className="mt-3 text-sm text-foreground/70">{t('sunGame.menu.hint')}</p>
+                {preparationInterrupted && <p role="status" className="mt-3 text-sm font-semibold">{t('sunGame.menu.interrupted')}</p>}
+                <div className="mt-5 space-y-3">
+                  <button type="button" onClick={() => start('timed')} className="w-full rounded-2xl bg-primary px-5 py-4 text-left font-semibold text-primary-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">{t('sunGame.menu.timed')}</button>
+                  <button type="button" onClick={() => start('practice')} className="w-full rounded-2xl border border-foreground/20 px-5 py-4 text-left font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">{t('sunGame.practice.play')}</button>
+                  <SunHallOfFame onOpenChange={setHallOpen} className="w-full rounded-2xl border border-primary/30 px-5 py-4 text-left font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary" />
+                </div>
+                <details className="mt-5 border-t border-foreground/10 pt-4">
+                  <summary className="cursor-pointer rounded-lg py-2 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-primary">{t('sunGame.menu.progress')}</summary>
+                  <p className="mt-3 font-semibold">{t('sunGame.best', { count: best })}</p>
+                  <SunGameLeaderboard entries={leaderboard} currentRank={null} />
+                  <SunGameMedals achievements={achievements} />
+                </details>
+              </section>
+            </div>
+          ) : <>
           <div ref={hudRef} className="absolute inset-x-0 top-0 z-10 flex flex-wrap items-center justify-between gap-2 border-b border-foreground/10 bg-background/90 px-4 py-4 backdrop-blur-sm sm:px-8">
             <div>
               <h2 id="sun-game-title" className="text-lg font-bold">{t(mode === 'practice' ? 'sunGame.practice.title' : 'sunGame.title')}</h2>
@@ -315,30 +383,40 @@ export default function SunBouncing({ size = 40, className }: Props) {
             </div>}
             {mode === 'timed' && phase === 'playing' && remaining <= 5 && <p role="status" className="w-full text-center text-xs font-bold text-red-500">{t('sunGame.lastSeconds')}</p>}
           </div>
-          {phase === 'playing' || phase === 'paused' ? (
-            <>
+          {phase === 'countdown' || phase === 'playing' || phase === 'paused' ? (
+            <div ref={courtRef} role="region" aria-label={t('sunGame.table.label')} onPointerMove={(event) => movePaddle(event.clientX, event.clientY)} onPointerDown={(event) => {
+              if (event.button !== 0) return
+              const contact = movePaddle(event.clientX, event.clientY)
+              const ball = motionRef.current
+              if (!contact || !ball) return
+              if (paddleHitsBall(contact, ball, gameSize)) hit((contact.x - ball.x - gameSize / 2) / (gameSize / 2))
+              else miss()
+            }} className={`absolute inset-x-4 bottom-4 top-[calc(var(--sun-game-hud-height,200px)+1rem)] overflow-hidden rounded-2xl border border-white/70 bg-[#0c544d]/85 shadow-xl ${phase === 'playing' ? 'cursor-none touch-none' : ''}`}>
+            <TableTennisCourt />
+            <span ref={opponentRef} aria-hidden="true" hidden={phase === 'countdown'} className="pointer-events-none absolute left-0 top-0"><TableTennisPaddle opponent /></span>
+            <span ref={paddleRef} aria-hidden="true" hidden={phase === 'countdown'} className="pointer-events-none absolute left-0 top-0"><TableTennisPaddle /></span>
+            {phase === 'countdown' ? <div className="absolute inset-0 z-10 flex items-center justify-center p-4"><SunGameCountdown onComplete={beginRound} /></div> : <>
             <button
               ref={ballRef}
               type="button"
               disabled={phase === 'paused'}
-              onPointerDown={(event) => {
-                // Score on contact: the moving ball may be elsewhere on release.
-                if (event.button === 0) hit()
-              }}
               onClick={(event) => {
                 // Keyboard and assistive technology activate without a pointer.
-                if (event.detail === 0) hit()
+                if (event.detail === 0) {
+                  const ball = motionRef.current, court = courtRef.current
+                  if (ball && court && paddleRef.current) paddleRef.current.style.transform = paddleTransform(ball.x + gameSize / 2, ball.y + gameSize / 2, court.clientWidth || window.innerWidth, court.clientHeight || Math.max(160, window.innerHeight - 200))
+                  hit()
+                }
               }}
               aria-label={t('sunGame.catch')}
-              className={`absolute left-0 top-0 cursor-pointer touch-none rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary ${feedback ? 'bg-primary/20 ring-4 ring-primary/40' : ''}`}
+              className={`absolute left-0 top-0 cursor-none touch-none rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white ${feedback ? 'bg-white/10 ring-4 ring-white/40' : ''}`}
               style={{ width: gameSize, height: gameSize }}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/sun/sol6.png" alt="" width={gameSize} height={gameSize} draggable={false} className="pointer-events-none" />
-              {feedback > 0 && <span key={hits} aria-hidden="true" className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 text-xl font-black text-primary motion-safe:animate-bounce">+{feedback}</span>}
+              <TableTennisBall />
+              {feedback > 0 && <span key={hits} aria-hidden="true" className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 text-xl font-black text-white motion-safe:animate-bounce">+{feedback}</span>}
             </button>
             {phase === 'paused' && (
-              <div className="absolute inset-x-0 bottom-0 top-[var(--sun-game-hud-height,200px)] z-20 overflow-y-auto bg-background/40 px-6 py-6">
+              <div className="absolute inset-0 z-20 overflow-y-auto bg-background/40 px-6 py-6">
                 <div className="mx-auto w-full max-w-sm rounded-3xl border border-primary/20 bg-background p-6 text-center shadow-xl">
                   <h3 className="text-2xl font-bold">{t('sunGame.paused')}</h3>
                   <p className="my-5 text-sm text-foreground/70">{t('sunGame.pauseHint')}</p>
@@ -347,6 +425,8 @@ export default function SunBouncing({ size = 40, className }: Props) {
               </div>
             )}
             </>
+            }
+            </div>
           ) : (
             <div className="absolute inset-x-0 bottom-0 top-[var(--sun-game-hud-height,200px)] overflow-y-auto px-6 py-6">
               <div className="mx-auto w-full max-w-sm rounded-3xl border border-primary/20 bg-background p-6 text-center shadow-xl">
@@ -365,29 +445,12 @@ export default function SunBouncing({ size = 40, className }: Props) {
                 {mode === 'practice' && <button type="button" onClick={() => start('timed')} className="mt-3 rounded-full border border-foreground/20 px-6 py-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">{t('sunGame.practice.timed')}</button>}
                 {mode === 'timed' && <>
                 <SunGameLeaderboard entries={leaderboard} currentRank={currentRank} />
-                <section aria-label={t('sunGame.medals.title')} className="mt-6 border-t border-foreground/10 pt-5 text-left">
-                  <h4 className="text-base font-bold">{t('sunGame.medals.count', { count: achievements.length, total: ACHIEVEMENT_IDS.length })}</h4>
-                  <p className="mt-1 text-xs text-foreground/70">{t('sunGame.medals.hint')}</p>
-                  <ul className="mt-4 space-y-3">
-                    {ACHIEVEMENT_IDS.map((id) => {
-                      const unlocked = achievements.includes(id)
-                      const isNew = newAchievements.includes(id)
-                      return (
-                        <li key={id} className={`rounded-xl border p-3 ${unlocked ? 'border-primary/30 bg-primary/10' : 'border-foreground/10'}`}>
-                          <div className="flex items-center justify-between gap-2">
-                            <h5 className="text-sm font-semibold"><span aria-hidden="true" className="mr-2">{unlocked ? '★' : '☆'}</span>{t(`sunGame.medals.${id}.title`)}</h5>
-                            <span className={`shrink-0 text-xs font-semibold ${isNew ? 'text-primary' : 'text-foreground/70'}`}>{t(isNew ? 'sunGame.medals.new' : unlocked ? 'sunGame.medals.unlocked' : 'sunGame.medals.locked')}</span>
-                          </div>
-                          <p className="mt-1 text-xs text-foreground/70">{t(`sunGame.medals.${id}.description`)}</p>
-                        </li>
-                      )
-                    })}
-                  </ul>
-                </section>
+                <SunGameMedals achievements={achievements} newAchievements={newAchievements} />
                 </>}
               </div>
             </div>
           )}
+          </>}
         </dialog>, document.body,
       )}
     </div>
