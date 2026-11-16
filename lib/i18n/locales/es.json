@@ -461,7 +461,105 @@
     "contact": "Contacto",
     "followUs": "Síguenos",
     "allRightsReserved": "Todos los derechos reservados.",
-    "scrollHint": "Mira la pelota"
+    "scrollHint": "Mira la pelota",
+    "sunHits": "Aciertos: {count}"
   },
-  "comingSoon": "Pronto activaremos la sección de {section}."
+  "comingSoon": "Pronto activaremos la sección de {section}.",
+  "sunGame": {
+    "title": "Atrapa la pelota",
+    "instructions": "30 s · 5 seguidos ×2 · 10 seguidos ×3. Fallar reinicia la racha.",
+    "play": "Jugar",
+    "exit": "Salir",
+    "catch": "Atrapar la pelota",
+    "time": "Tiempo: {seconds} s",
+    "best": "Récord: {count}",
+    "finished": "¡Partida terminada!",
+    "replay": "Volver a jugar",
+    "points": "Puntos: {count}",
+    "combo": "Racha: {count} · ×{multiplier}",
+    "level": "Nivel: {level}/5",
+    "bestStreak": "Mejor racha: {count}",
+    "sound": "Sonido del juego",
+    "soundOn": "Sonido: sí",
+    "soundOff": "Sonido: no",
+    "timeRemaining": "Tiempo restante",
+    "lastSeconds": "¡Últimos 5 segundos!",
+    "newRecord": "¡Nuevo récord!",
+    "misses": "Fallos: {count}",
+    "accuracy": "Precisión: {percent}%",
+    "pause": "Pausa",
+    "paused": "Partida en pausa",
+    "pauseHint": "El tiempo y la pelota están detenidos. Conservas tus puntos y tu racha.",
+    "resume": "Continuar partida",
+    "medals": {
+      "title": "Medallas",
+      "count": "Medallas: {count}/{total}",
+      "hint": "Completa los objetivos en una partida y termina para desbloquear las medallas.",
+      "new": "¡Nueva!",
+      "unlocked": "Conseguida",
+      "locked": "Pendiente",
+      "earned": "Nuevas medallas: {count}",
+      "firstGame": {
+        "title": "Primer partido",
+        "description": "Completa una partida de 30 segundos."
+      },
+      "combo": {
+        "title": "En racha",
+        "description": "Logra 10 aciertos seguidos en una partida."
+      },
+      "precision": {
+        "title": "Puntería fina",
+        "description": "Termina con al menos 10 aciertos y un 90% de precisión o más."
+      },
+      "expert": {
+        "title": "Máxima velocidad",
+        "description": "Alcanza el nivel 5 con 20 aciertos en una partida."
+      }
+    },
+    "leaderboard": {
+      "title": "Tus 5 mejores partidas",
+      "hint": "En este navegador. En caso de empate, cuentan la precisión y la mejor racha.",
+      "current": "Esta partida",
+      "position": "Puesto {rank} en tu clasificación",
+      "notRanked": "Esta partida no entra en tus cinco mejores."
+    },
+    "practice": {
+      "play": "Practicar",
+      "title": "Práctica libre",
+      "instructions": "Sin límite de tiempo · Combos y niveles activos.",
+      "notice": "La práctica no cuenta para récords, medallas ni clasificación.",
+      "finish": "Terminar",
+      "unlimited": "Sin límite",
+      "badge": "Práctica",
+      "finished": "Práctica terminada",
+      "replay": "Volver a practicar",
+      "timed": "Jugar 30 segundos"
+    }
+  },
+  "sunHall": {
+    "title": "Salón de la fama",
+    "rules": "Partidas de 30 segundos, sin pausas ni cambios de ventana. Combos ×2 y ×3.",
+    "intro": "Compite por entrar en el top 10 histórico. Publicar tu resultado es opcional.",
+    "play": "Competir (30 s)",
+    "preparing": "Preparando partida…",
+    "optional": "¿Quieres publicar el resultado? Usa un apodo, sin datos personales.",
+    "alias": "Apodo (3–20 caracteres)",
+    "consent": "Acepto que mi apodo y resultado aparezcan públicamente en el Salón de la Fama.",
+    "publish": "Publicar resultado",
+    "publishing": "Publicando…",
+    "published": "Resultado publicado. Aparecerá en la lista si está entre los diez mejores.",
+    "top": "Top 10 histórico",
+    "refresh": "Actualizar",
+    "loading": "Cargando clasificación…",
+    "empty": "Todavía no hay resultados. ¡Puedes estrenar el Salón!",
+    "errors": {
+      "unavailable": "El Salón no está disponible ahora. Puedes seguir jugando en los otros modos.",
+      "limited": "Has iniciado muchas partidas. Vuelve a intentarlo más tarde.",
+      "expired": "Esta partida ya no se puede publicar. Inicia una nueva.",
+      "invalid": "No se ha podido validar la partida. Inicia una nueva.",
+      "alias": "Usa de 3 a 20 letras, números, espacios, guiones o guiones bajos.",
+      "interrupted": "La partida se ha interrumpido. Para clasificar, juega sin cambiar de pestaña ni redimensionar la ventana.",
+      "smallBoard": "Amplía la ventana o cambia la orientación para poder competir."
+    }
+  }
 }

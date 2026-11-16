@@ -459,7 +459,105 @@
     "contact": "Contact",
     "followUs": "Follow Us",
     "allRightsReserved": "All rights reserved.",
-    "scrollHint": "Look at the ball"
+    "scrollHint": "Look at the ball",
+    "sunHits": "Hits: {count}"
   },
-  "comingSoon": "We’ll be launching the {section} section soon."
+  "comingSoon": "We’ll be launching the {section} section soon.",
+  "sunGame": {
+    "title": "Catch the ball",
+    "instructions": "30 s · 5 in a row ×2 · 10 in a row ×3. A miss resets your streak.",
+    "play": "Play",
+    "exit": "Exit",
+    "catch": "Catch the ball",
+    "time": "Time: {seconds} s",
+    "best": "Best: {count}",
+    "finished": "Game over!",
+    "replay": "Play again",
+    "points": "Points: {count}",
+    "combo": "Streak: {count} · ×{multiplier}",
+    "level": "Level: {level}/5",
+    "bestStreak": "Best streak: {count}",
+    "sound": "Game sound",
+    "soundOn": "Sound: on",
+    "soundOff": "Sound: off",
+    "timeRemaining": "Time remaining",
+    "lastSeconds": "Last 5 seconds!",
+    "newRecord": "New record!",
+    "misses": "Misses: {count}",
+    "accuracy": "Accuracy: {percent}%",
+    "pause": "Pause",
+    "paused": "Game paused",
+    "pauseHint": "The timer and ball are stopped. Your points and streak are preserved.",
+    "resume": "Resume game",
+    "medals": {
+      "title": "Medals",
+      "count": "Medals: {count}/{total}",
+      "hint": "Meet the goals in a single round and finish it to unlock medals.",
+      "new": "New!",
+      "unlocked": "Unlocked",
+      "locked": "Locked",
+      "earned": "New medals: {count}",
+      "firstGame": {
+        "title": "First match",
+        "description": "Complete a 30-second round."
+      },
+      "combo": {
+        "title": "On a roll",
+        "description": "Get 10 hits in a row in one round."
+      },
+      "precision": {
+        "title": "Sharp aim",
+        "description": "Finish with at least 10 hits and 90% accuracy."
+      },
+      "expert": {
+        "title": "Full speed",
+        "description": "Reach level 5 with 20 hits in one round."
+      }
+    },
+    "leaderboard": {
+      "title": "Your 5 best rounds",
+      "hint": "On this browser. Ties are broken by accuracy, then best streak.",
+      "current": "This round",
+      "position": "Rank {rank} in your personal leaderboard",
+      "notRanked": "This round did not make your top five."
+    },
+    "practice": {
+      "play": "Practice",
+      "title": "Free practice",
+      "instructions": "No time limit · Combos and levels enabled.",
+      "notice": "Practice does not count towards records, medals or the leaderboard.",
+      "finish": "Finish",
+      "unlimited": "No limit",
+      "badge": "Practice",
+      "finished": "Practice complete",
+      "replay": "Practice again",
+      "timed": "Play 30 seconds"
+    }
+  },
+  "sunHall": {
+    "title": "Hall of Fame",
+    "rules": "30-second rounds, with no pauses or window changes. Combos ×2 and ×3.",
+    "intro": "Compete for the all-time top 10. Publishing your result is optional.",
+    "play": "Compete (30 s)",
+    "preparing": "Preparing round…",
+    "optional": "Want to publish your result? Use a nickname without personal details.",
+    "alias": "Nickname (3–20 characters)",
+    "consent": "I agree to show my nickname and result publicly in the Hall of Fame.",
+    "publish": "Publish result",
+    "publishing": "Publishing…",
+    "published": "Result published. It will appear in the list if it is among the top ten.",
+    "top": "All-time top 10",
+    "refresh": "Refresh",
+    "loading": "Loading leaderboard…",
+    "empty": "No results yet. You can be the first!",
+    "errors": {
+      "unavailable": "The Hall is unavailable right now. You can still play the other modes.",
+      "limited": "You have started many rounds. Try again later.",
+      "expired": "This round can no longer be published. Start a new one.",
+      "invalid": "This round could not be validated. Start a new one.",
+      "alias": "Use 3–20 letters, numbers, spaces, hyphens or underscores.",
+      "interrupted": "The round was interrupted. To qualify, play without switching tabs or resizing the window.",
+      "smallBoard": "Enlarge the window or change orientation to compete."
+    }
+  }
 }
