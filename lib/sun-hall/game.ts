@@ -1,4 +1,7 @@
 // Shared deterministic simulation: the server replays inputs rather than trusting a score.
+import { paddleHitsBall, returnTableBall } from '../table-tennis.ts'
+
+export const RULES_VERSION = 2
 export const ROUND_MS = 30_000
 export const BALL_SIZE = 56
 export const MIN_INPUT_GAP = 80
@@ -7,7 +10,7 @@ const TICK_MS = 1000 / 60
 const HIT_TOLERANCE = 10 // A rendered frame can lag the input by one frame.
 
 export type Board = { width: number; height: number }
-export type Challenge = Board & { token: string; seed: number }
+export type Challenge = Board & { token: string; seed: number; rulesVersion: typeof RULES_VERSION }
 export type GameInput = { t: number; x: number; y: number }
 export type Game = Board & {
   tick: number; x: number; y: number; vx: number; vy: number
@@ -39,9 +42,9 @@ export function advanceGame(game: Game, ms: number) {
 
 export function applyInput(game: Game, input: GameInput) {
   advanceGame(game, input.t)
-  const hit = input.x >= game.x - HIT_TOLERANCE && input.x <= game.x + BALL_SIZE + HIT_TOLERANCE
-    && input.y >= game.y - HIT_TOLERANCE && input.y <= game.y + BALL_SIZE + HIT_TOLERANCE
+  const hit = paddleHitsBall(input, game, BALL_SIZE, HIT_TOLERANCE)
   if (hit) {
+    returnTableBall(game, (input.x - (game.x + BALL_SIZE / 2)) / (BALL_SIZE / 2))
     game.hits++; game.streak++
     game.points += Math.min(3, 1 + Math.floor(game.streak / 5))
     game.bestStreak = Math.max(game.bestStreak, game.streak)

@@ -462,23 +462,23 @@
     "followUs": "Síguenos",
     "allRightsReserved": "Todos los derechos reservados.",
     "scrollHint": "Mira la pelota",
-    "sunHits": "Aciertos: {count}"
+    "sunHits": "Devoluciones: {count}"
   },
   "comingSoon": "Pronto activaremos la sección de {section}.",
   "sunGame": {
-    "title": "Atrapa la pelota",
-    "instructions": "30 s · 5 seguidos ×2 · 10 seguidos ×3. Fallar reinicia la racha.",
+    "title": "Reto de devoluciones",
+    "instructions": "Pulsa o toca la pelota para devolverla. 5 seguidas ×2 · 10 ×3.",
     "play": "Jugar",
     "exit": "Salir",
-    "catch": "Atrapar la pelota",
+    "catch": "Devolver la pelota",
     "time": "Tiempo: {seconds} s",
     "best": "Récord: {count}",
     "finished": "¡Partida terminada!",
     "replay": "Volver a jugar",
     "points": "Puntos: {count}",
-    "combo": "Racha: {count} · ×{multiplier}",
+    "combo": "Peloteo: {count} · ×{multiplier}",
     "level": "Nivel: {level}/5",
-    "bestStreak": "Mejor racha: {count}",
+    "bestStreak": "Mejor peloteo: {count}",
     "sound": "Sonido del juego",
     "soundOn": "Sonido: sí",
     "soundOff": "Sonido: no",
@@ -504,16 +504,16 @@
         "description": "Completa una partida de 30 segundos."
       },
       "combo": {
-        "title": "En racha",
-        "description": "Logra 10 aciertos seguidos en una partida."
+        "title": "Buen peloteo",
+        "description": "Encadena 10 devoluciones en una partida."
       },
       "precision": {
-        "title": "Puntería fina",
-        "description": "Termina con al menos 10 aciertos y un 90% de precisión o más."
+        "title": "Control de pala",
+        "description": "Termina con al menos 10 devoluciones y un 90% de precisión o más."
       },
       "expert": {
-        "title": "Máxima velocidad",
-        "description": "Alcanza el nivel 5 con 20 aciertos en una partida."
+        "title": "Ritmo de competición",
+        "description": "Alcanza el nivel 5 con 20 devoluciones en una partida."
       }
     },
     "leaderboard": {
@@ -526,7 +526,7 @@
     "practice": {
       "play": "Practicar",
       "title": "Práctica libre",
-      "instructions": "Sin límite de tiempo · Combos y niveles activos.",
+      "instructions": "Peloteo libre, sin límite de tiempo. Pulsa o toca la pelota.",
       "notice": "La práctica no cuenta para récords, medallas ni clasificación.",
       "finish": "Terminar",
       "unlimited": "Sin límite",
@@ -534,12 +534,26 @@
       "finished": "Práctica terminada",
       "replay": "Volver a practicar",
       "timed": "Jugar 30 segundos"
+    },
+    "menu": {
+      "title": "Joventut TT",
+      "hint": "Entrena tus reflejos con el Club Esportiu Joventut TT y elige tu reto.",
+      "timed": "Partida de 30 segundos",
+      "progress": "Tus logros y mejores partidas",
+      "interrupted": "La preparación se ha cancelado. Elige un modo cuando estés listo."
+    },
+    "countdown": {
+      "ready": "Prepárate",
+      "announcement": "La partida empieza en {count}"
+    },
+    "table": {
+      "label": "Mesa de tenis de mesa de Joventut TT"
     }
   },
   "sunHall": {
     "title": "Salón de la fama",
-    "rules": "Partidas de 30 segundos, sin pausas ni cambios de ventana. Combos ×2 y ×3.",
-    "intro": "Compite por entrar en el top 10 histórico. Publicar tu resultado es opcional.",
+    "rules": "Reto de tenis de mesa: 30 s, sin pausas ni cambios de ventana. Combos ×2 y ×3.",
+    "intro": "Representa al Joventut TT en el top 10 de devoluciones. Publicar tu resultado es opcional.",
     "play": "Competir (30 s)",
     "preparing": "Preparando partida…",
     "optional": "¿Quieres publicar el resultado? Usa un apodo, sin datos personales.",

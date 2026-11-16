@@ -30,6 +30,16 @@ test('altered coordinates are evaluated as misses instead of accepting the claim
   expect(replayed.misses).toBeGreaterThan(0)
   expect(replayed.points).toBeLessThan(47)
 })
+test('a successful paddle contact returns the ball toward the opponent', () => {
+  const game = createGame(board, 1234)
+  advanceGame(game, 200)
+  expect(game.vy).toBeGreaterThan(0)
+  const y = game.y
+  expect(applyInput(game, { t: 200, x: game.x + 28, y: game.y + 28 })).toBe(true)
+  expect(game.vy).toBeLessThan(0)
+  advanceGame(game, 400)
+  expect(game.y).toBeLessThan(y)
+})
 test.each([
   [{ t: -1, x: 20, y: 20 }], [{ t: 30_000, x: 20, y: 20 }],
   [{ t: 200, x: 20, y: 20 }, { t: 250, x: 20, y: 20 }],
@@ -47,8 +57,10 @@ test('zero-input rounds and long animations stay bounded', () => {
   expect(game.y).toBeLessThanOrEqual(board.height - 56)
 })
 test('publication rejects direct scores, missing consent and identifying/unsafe aliases', () => {
-  const valid = { token: 'a'.repeat(64), alias: 'Pilota_7', consent: true, inputs: [] }
+  const valid = { rulesVersion: 2, token: 'a'.repeat(64), alias: 'Pilota_7', consent: true, inputs: [] }
   expect(publishSchema.safeParse(valid).success).toBe(true)
+  expect(publishSchema.safeParse({ ...valid, rulesVersion: 1 }).success).toBe(false)
+  expect(publishSchema.safeParse({ ...valid, rulesVersion: undefined }).success).toBe(false)
   expect(publishSchema.safeParse({ ...valid, points: 900 }).success).toBe(false)
   expect(publishSchema.safeParse({ ...valid, consent: false }).success).toBe(false)
   for (const alias of ['ab', 'a'.repeat(21), 'mail@example.org', '<script>', 'https://club.es']) expect(publishSchema.safeParse({ ...valid, alias }).success).toBe(false)
