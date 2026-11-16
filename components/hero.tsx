@@ -75,9 +75,7 @@ export default function Hero() {
 
       {/* Sun bouncing abajo a la derecha */}
       <div className="fixed bottom-8 right-8 z-50">
-        <a href="#about" aria-label="Scroll to content" className="inline-flex text-foreground">
-          <SunBouncing className="text-foreground" />
-        </a>
+        <SunBouncing className="text-foreground" />
       </div>
     </section>
   )

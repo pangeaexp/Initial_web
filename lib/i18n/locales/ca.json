@@ -459,7 +459,105 @@
     "contact": "Contacte",
     "followUs": "Segueix-nos",
     "allRightsReserved": "Tots els drets reservats.",
-    "scrollHint": "Mira la pilota"
+    "scrollHint": "Mira la pilota",
+    "sunHits": "Encerts: {count}"
   },
-  "comingSoon": "Aviat activarem la secció de {section}."
+  "comingSoon": "Aviat activarem la secció de {section}.",
+  "sunGame": {
+    "title": "Atrapa la pilota",
+    "instructions": "30 s · 5 seguits ×2 · 10 seguits ×3. Fallar reinicia la ratxa.",
+    "play": "Jugar",
+    "exit": "Sortir",
+    "catch": "Atrapar la pilota",
+    "time": "Temps: {seconds} s",
+    "best": "Rècord: {count}",
+    "finished": "Partida acabada!",
+    "replay": "Tornar a jugar",
+    "points": "Punts: {count}",
+    "combo": "Ratxa: {count} · ×{multiplier}",
+    "level": "Nivell: {level}/5",
+    "bestStreak": "Millor ratxa: {count}",
+    "sound": "So del joc",
+    "soundOn": "So: sí",
+    "soundOff": "So: no",
+    "timeRemaining": "Temps restant",
+    "lastSeconds": "Últims 5 segons!",
+    "newRecord": "Nou rècord!",
+    "misses": "Errades: {count}",
+    "accuracy": "Precisió: {percent}%",
+    "pause": "Pausa",
+    "paused": "Partida en pausa",
+    "pauseHint": "El temps i la pilota estan aturats. Conserves els punts i la ratxa.",
+    "resume": "Continuar partida",
+    "medals": {
+      "title": "Medalles",
+      "count": "Medalles: {count}/{total}",
+      "hint": "Completa els objectius en una partida i acaba-la per desbloquejar les medalles.",
+      "new": "Nova!",
+      "unlocked": "Aconseguida",
+      "locked": "Pendent",
+      "earned": "Medalles noves: {count}",
+      "firstGame": {
+        "title": "Primer partit",
+        "description": "Completa una partida de 30 segons."
+      },
+      "combo": {
+        "title": "En ratxa",
+        "description": "Aconsegueix 10 encerts seguits en una partida."
+      },
+      "precision": {
+        "title": "Bona punteria",
+        "description": "Acaba amb almenys 10 encerts i un 90% de precisió o més."
+      },
+      "expert": {
+        "title": "Màxima velocitat",
+        "description": "Arriba al nivell 5 amb 20 encerts en una partida."
+      }
+    },
+    "leaderboard": {
+      "title": "Les teves 5 millors partides",
+      "hint": "En aquest navegador. En cas d’empat, compten la precisió i la millor ratxa.",
+      "current": "Aquesta partida",
+      "position": "Posició {rank} a la teva classificació",
+      "notRanked": "Aquesta partida no entra entre les teves cinc millors."
+    },
+    "practice": {
+      "play": "Practicar",
+      "title": "Pràctica lliure",
+      "instructions": "Sense límit de temps · Combos i nivells actius.",
+      "notice": "La pràctica no compta per a rècords, medalles ni classificació.",
+      "finish": "Acabar",
+      "unlimited": "Sense límit",
+      "badge": "Pràctica",
+      "finished": "Pràctica acabada",
+      "replay": "Tornar a practicar",
+      "timed": "Jugar 30 segons"
+    }
+  },
+  "sunHall": {
+    "title": "Saló de la fama",
+    "rules": "Partides de 30 segons, sense pauses ni canvis de finestra. Combos ×2 i ×3.",
+    "intro": "Competeix per entrar al top 10 històric. Publicar el resultat és opcional.",
+    "play": "Competir (30 s)",
+    "preparing": "Preparant la partida…",
+    "optional": "Vols publicar el resultat? Fes servir un àlies, sense dades personals.",
+    "alias": "Àlies (3–20 caràcters)",
+    "consent": "Accepto que el meu àlies i resultat apareguin públicament al Saló de la Fama.",
+    "publish": "Publicar resultat",
+    "publishing": "Publicant…",
+    "published": "Resultat publicat. Apareixerà a la llista si és entre els deu millors.",
+    "top": "Top 10 històric",
+    "refresh": "Actualitzar",
+    "loading": "Carregant la classificació…",
+    "empty": "Encara no hi ha resultats. Pots estrenar el Saló!",
+    "errors": {
+      "unavailable": "El Saló no està disponible ara. Pots continuar jugant als altres modes.",
+      "limited": "Has iniciat moltes partides. Torna-ho a provar més tard.",
+      "expired": "Aquesta partida ja no es pot publicar. Inicia’n una de nova.",
+      "invalid": "No s’ha pogut validar la partida. Inicia’n una de nova.",
+      "alias": "Fes servir de 3 a 20 lletres, números, espais, guions o guions baixos.",
+      "interrupted": "La partida s’ha interromput. Per classificar-te, juga sense canviar de pestanya ni redimensionar la finestra.",
+      "smallBoard": "Amplia la finestra o canvia l’orientació per poder competir."
+    }
+  }
 }
