@@ -3,8 +3,15 @@
 Clasificación histórica pública de diez resultados, ordenados por puntos, precisión,
 mejor racha y antigüedad. El apodo no identifica una cuenta: puede repetirse.
 Los modos local y práctica conservan sus propios resultados y comportamiento.
-El botón flotante «Jugar» abre un menú común con los tres modos y permite
+El botón flotante «Jugar» abre el menú de modos y permite
 consultar las medallas y mejores partidas locales sin completar una partida nueva.
+
+En «Contra la IA», cada jugador suma un punto si su rival pierde la devolución.
+La partida termina a 11 o 21 puntos, según la opción elegida, con dos de ventaja.
+La dificultad ajusta la velocidad de la pelota y la reacción de la pala rival.
+El jugador puede seleccionar golpe plano, liftado o cortado. Con el teclado,
+↑ ejecuta un liftado y ↓ un cortado durante una devolución.
+El marcador es independiente de los retos de devoluciones y del Salón de la Fama.
 
 ## Identidad y mecánica de tenis de mesa
 
@@ -22,10 +29,14 @@ preferencia de movimiento reducido y se detiene mientras el menú está abierto.
 Los puntos, bonos, niveles y objetivos se mantienen como reglas del reto arcade.
 Los registros y medallas existentes se conservan en sus claves y tablas originales.
 
-La simulación compartida usa `rulesVersion: 2`. La API rechaza publicaciones
-de clientes con reglas anteriores y el cliente no inicia partidas contra un
-servidor incompatible. Esto evita reinterpretar una partida antigua con la nueva
-trayectoria. No se necesita una nueva migración SQL para esta adaptación.
+La simulación compartida usa `rulesVersion: 4`. La pelota recorre el tablero en
+tres dimensiones y rebota con gravedad. En «Competir», «Practicar» y la partida
+de 30 segundos, la recepción se extiende por detrás del borde cercano y el
+aumento de velocidad se atenúa al llegar al lado del jugador. En «Competir», el
+servidor reproduce esa trayectoria y proyecta la pelota a las coordenadas de
+pantalla para validar cada devolución.
+Los desafíos se vinculan a su versión al calcular el hash del token. La
+clasificación histórica se mantiene en la misma tabla.
 
 ## Partidas y publicación
 

@@ -16,9 +16,9 @@ export default function SunGameCountdown({ onComplete }: { onComplete: () => voi
     return () => clearInterval(timer)
   }, [onComplete])
   return (
-    <div role="status" aria-live="polite" aria-atomic="true" className="rounded-3xl border border-primary/20 bg-background/95 px-10 py-5 text-center shadow-xl">
+    <div role="status" aria-live="polite" aria-atomic="true" className="flex items-center gap-3 rounded-xl border border-primary/20 bg-background px-3 py-2 shadow-xl">
       <p className="text-sm font-semibold">{t('sunGame.countdown.ready')}</p>
-      <p aria-hidden="true" className="mt-3 text-6xl font-black text-primary tabular-nums">{count}</p>
+      <p aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary text-3xl leading-none font-black text-primary-foreground tabular-nums">{count}</p>
       <span className="sr-only">{t('sunGame.countdown.announcement', { count })}</span>
     </div>
   )

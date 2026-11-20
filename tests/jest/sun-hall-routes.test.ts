@@ -4,6 +4,7 @@ import { GET } from '@/app/api/sun-hall/route'
 import { POST as challenge } from '@/app/api/sun-hall/challenge/route'
 import { POST as publish } from '@/app/api/sun-hall/publish/route'
 import { getHall, issueChallenge, publishScore, HallError } from '@/lib/sun-hall/server'
+import { RULES_VERSION } from '@/lib/sun-hall/game'
 
 jest.mock('@/lib/sun-hall/server', () => {
   class HallError extends Error { constructor(public code: string, public status: number) { super(code) } }
@@ -12,10 +13,10 @@ jest.mock('@/lib/sun-hall/server', () => {
 const request = (data: unknown, origin = 'http://localhost') => new Request('http://localhost/api/sun-hall', {
   method: 'POST', headers: { origin, 'content-type': 'application/json' }, body: JSON.stringify(data),
 })
-const valid = { rulesVersion: 2, token: 'a'.repeat(64), alias: 'Pilota_7', consent: true, inputs: [] }
+const valid = { rulesVersion: RULES_VERSION, token: 'a'.repeat(64), alias: 'Pilota_7', consent: true, inputs: [] }
 beforeEach(() => {
   jest.mocked(getHall).mockResolvedValue([])
-  jest.mocked(issueChallenge).mockResolvedValue({ rulesVersion: 2, token: 'a'.repeat(64), seed: 1, width: 480, height: 300 })
+  jest.mocked(issueChallenge).mockResolvedValue({ rulesVersion: RULES_VERSION, token: 'a'.repeat(64), seed: 1, width: 480, height: 300 })
   jest.mocked(publishScore).mockResolvedValue({ id: 'score-id', entries: [] })
 })
 afterEach(() => jest.resetAllMocks())

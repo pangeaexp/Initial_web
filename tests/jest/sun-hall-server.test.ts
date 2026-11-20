@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js'
 import { requireSupabaseAdminConfig } from '@/lib/supabase/env'
 import { getHall, issueChallenge, publishScore } from '@/lib/sun-hall/server'
 import { advanceGame, applyInput, createGame, type GameInput } from '@/lib/sun-hall/game'
+import { projectTableBall } from '@/lib/table-tennis'
 
 jest.mock('server-only', () => ({}))
 jest.mock('@supabase/supabase-js', () => ({ createClient: jest.fn() }))
@@ -33,7 +34,8 @@ test('reconstructs and publishes points from coordinates rather than trusting th
   const game = createGame({ width: 480, height: 300 }, 1234), inputs: GameInput[] = []
   for (let i = 0; i < 5; i++) {
     const t = 200 + i * 200; advanceGame(game, t)
-    const input = { t, x: game.x + 28, y: game.y + 28 }; inputs.push(input); applyInput(game, input)
+    const { x, y } = projectTableBall(game.ball, game.width, game.height)
+    const input = { t, x, y }; inputs.push(input); applyInput(game, input)
   }
   expect(await publishScore('a'.repeat(64), 'Player', inputs)).toEqual({ id: 'score-id', entries: [] })
   expect(db.rpc).toHaveBeenCalledWith('publish_sun_game_score', expect.objectContaining({ p_points: 6, p_hits: 5, p_misses: 0, p_best_streak: 5 }))

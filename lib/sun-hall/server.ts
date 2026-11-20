@@ -10,6 +10,7 @@ function client() {
     global: { fetch: (input, init) => fetch(input, { ...init, cache: 'no-store' }) } })
 }
 const hash = (value: string) => createHash('sha256').update(value).digest('hex')
+const runTokenHash = (token: string) => hash(`sun-game-v${RULES_VERSION}:${token}`)
 export class HallError extends Error {
   constructor(public code: 'expired' | 'invalid' | 'limited', public status: number) { super(code) }
 }
@@ -27,7 +28,7 @@ export async function issueChallenge(board: Board, request: Request) {
   const seed = randomInt(0, 2_147_483_647)
   const ip = request.headers.get('x-vercel-forwarded-for') || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
   const { error } = await client().rpc('create_sun_game_run', {
-    p_token_hash: hash(token), p_seed: seed, p_width: board.width, p_height: board.height, p_client_hash: hash(ip),
+    p_token_hash: runTokenHash(token), p_seed: seed, p_width: board.width, p_height: board.height, p_client_hash: hash(ip),
   })
   if (error?.message.includes('rate_limited')) throw new HallError('limited', 429)
   if (error) throw error
@@ -36,7 +37,7 @@ export async function issueChallenge(board: Board, request: Request) {
 
 export async function publishScore(token: string, alias: string, inputs: GameInput[]) {
   const db = client()
-  const tokenHash = hash(token)
+  const tokenHash = runTokenHash(token)
   const { data: run, error } = await db.from('sun_game_runs').select('id,seed,width,height,created_at,expires_at,used_at').eq('token_hash', tokenHash).maybeSingle()
   if (error) throw error
   if (!run) throw new HallError('expired', 410)

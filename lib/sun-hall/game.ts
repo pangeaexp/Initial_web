@@ -1,7 +1,7 @@
 // Shared deterministic simulation: the server replays inputs rather than trusting a score.
-import { paddleHitsBall, returnTableBall } from '../table-tennis.ts'
+import { advanceTableBall, BASELINE_FLIGHT, baselineRallySpeed, createTableBall, paddleHitsBall, projectTableBall, returnTableBall, type TableBall } from '../table-tennis.ts'
 
-export const RULES_VERSION = 2
+export const RULES_VERSION = 4
 export const ROUND_MS = 30_000
 export const BALL_SIZE = 56
 export const MIN_INPUT_GAP = 80
@@ -13,38 +13,32 @@ export type Board = { width: number; height: number }
 export type Challenge = Board & { token: string; seed: number; rulesVersion: typeof RULES_VERSION }
 export type GameInput = { t: number; x: number; y: number }
 export type Game = Board & {
-  tick: number; x: number; y: number; vx: number; vy: number
+  tick: number; ball: TableBall
   hits: number; misses: number; points: number; streak: number; bestStreak: number
 }
 export type HallEntry = { id: string; alias: string; points: number; hits: number; misses: number; best_streak: number; accuracy: number }
 
 export function createGame(board: Board, seed: number): Game {
   const angle = Math.PI / 4 + (seed % 10_000) / 10_000 * Math.PI / 2
-  return { width: board.width, height: board.height, tick: 0, x: (board.width - BALL_SIZE) / 2, y: (board.height - BALL_SIZE) / 2,
-    vx: Math.cos(angle) * 220, vy: Math.sin(angle) * 220, hits: 0, misses: 0, points: 0, streak: 0, bestStreak: 0 }
+  return { width: board.width, height: board.height, tick: 0, ball: createTableBall(angle, -1, BASELINE_FLIGHT),
+    hits: 0, misses: 0, points: 0, streak: 0, bestStreak: 0 }
 }
 
 export function advanceGame(game: Game, ms: number) {
   const target = Math.floor(Math.min(ms, ROUND_MS) / TICK_MS)
+  const speedBonus = Math.min(4, Math.floor(game.hits / 5)) * 0.15
   while (game.tick < target) {
-    const speed = 1 + Math.min(4, Math.floor(game.hits / 5)) * 0.15
-    game.x += game.vx * speed / 60
-    game.y += game.vy * speed / 60
-    if (game.x < 0 || game.x > game.width - BALL_SIZE) {
-      game.x = Math.max(0, Math.min(game.x, game.width - BALL_SIZE)); game.vx *= -1
-    }
-    if (game.y < 0 || game.y > game.height - BALL_SIZE) {
-      game.y = Math.max(0, Math.min(game.y, game.height - BALL_SIZE)); game.vy *= -1
-    }
+    advanceTableBall(game.ball, baselineRallySpeed(game.ball, speedBonus) / 60, BASELINE_FLIGHT)
     game.tick++
   }
 }
 
 export function applyInput(game: Game, input: GameInput) {
   advanceGame(game, input.t)
-  const hit = paddleHitsBall(input, game, BALL_SIZE, HIT_TOLERANCE)
+  const ball = projectTableBall(game.ball, game.width, game.height)
+  const hit = paddleHitsBall(input, ball, HIT_TOLERANCE)
   if (hit) {
-    returnTableBall(game, (input.x - (game.x + BALL_SIZE / 2)) / (BALL_SIZE / 2))
+    returnTableBall(game.ball, (input.x - ball.x) / ball.radius, BASELINE_FLIGHT)
     game.hits++; game.streak++
     game.points += Math.min(3, 1 + Math.floor(game.streak / 5))
     game.bestStreak = Math.max(game.bestStreak, game.streak)

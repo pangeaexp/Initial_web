@@ -4,8 +4,13 @@ import '@testing-library/jest-dom'
 import SunHallOfFame from '@/components/SunHallOfFame'
 import { TranslationProvider } from '@/lib/i18n'
 import dictionary from '@/lib/i18n/locales/es.json'
+import { createGame, RULES_VERSION } from '@/lib/sun-hall/game'
+import { projectTableBall } from '@/lib/table-tennis'
 
 const token = 'a'.repeat(64)
+const board = { width: 480, height: 300 }
+const firstBall = projectTableBall(createGame(board, 1234).ball, board.width, board.height)
+const firstContact = { x: Math.round(firstBall.x), y: Math.round(firstBall.y) }
 const entry = { id: 'score-id', alias: 'Pilota_7', points: 1, hits: 1, misses: 0, best_streak: 1, accuracy: 100 }
 const mount = () => render(<TranslationProvider initialLanguage="es" dictionary={dictionary}><SunHallOfFame /></TranslationProvider>)
 const response = (data: unknown, status = 200) => Promise.resolve({ ok: status === 200, status, json: async () => data })
@@ -16,7 +21,7 @@ beforeEach(() => {
   Object.defineProperty(HTMLDialogElement.prototype, 'close', { configurable: true, value: function (this: HTMLDialogElement) { this.removeAttribute('open') } })
   jest.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(480)
   jest.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(300)
-  global.fetch = jest.fn((url) => String(url).endsWith('/challenge') ? response({ rulesVersion: 2, token, seed: 1234, width: 480, height: 300 }) : String(url).endsWith('/publish') ? response({ id: entry.id, entries: [entry] }) : response({ entries: [] })) as jest.Mock
+  global.fetch = jest.fn((url) => String(url).endsWith('/challenge') ? response({ rulesVersion: RULES_VERSION, token, seed: 1234, ...board }) : String(url).endsWith('/publish') ? response({ id: entry.id, entries: [entry] }) : response({ entries: [] })) as jest.Mock
 })
 afterEach(() => { cleanup(); jest.useRealTimers(); jest.restoreAllMocks() })
 async function play() {
@@ -24,22 +29,28 @@ async function play() {
   fireEvent.click(screen.getByRole('button', { name: 'Salón de la fama' }))
   await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Competir (30 s)' })) })
   act(() => jest.advanceTimersByTime(3000))
-  fireEvent.pointerDown(screen.getByRole('button', { name: 'Devolver la pelota' }), { button: 0, clientX: 240, clientY: 150 })
+  fireEvent.pointerDown(screen.getByRole('button', { name: 'Devolver la pelota' }), { button: 0, clientX: firstContact.x, clientY: firstContact.y })
 }
 test('publishes only after explicit nickname and public consent, with inputs instead of a score', async () => {
   await play()
   expect(screen.getByText('Puntos: 1')).toBeInTheDocument()
   act(() => jest.advanceTimersByTime(30_100))
   expect(jest.mocked(fetch).mock.calls.filter(([url]) => String(url).endsWith('/publish'))).toHaveLength(0)
+  const openPublish = () => fireEvent.click(screen.getByRole('button', { name: 'Publicar resultado' }))
+  expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
+  openPublish()
+  fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }))
+  expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
+  openPublish()
   expect(screen.getByRole('button', { name: 'Publicar resultado' })).toBeDisabled()
   fireEvent.change(screen.getByLabelText('Apodo (3–20 caracteres)'), { target: { value: 'Pilota_7' } })
   fireEvent.click(screen.getByRole('checkbox'))
   await act(async () => { fireEvent.submit(screen.getByRole('button', { name: 'Publicar resultado' }).closest('form')!) })
   expect(screen.getByText(/Resultado publicado\./)).toBeInTheDocument()
-  expect(screen.getByText('Pilota_7').closest('li')).toHaveAttribute('aria-current', 'true')
+  expect(screen.getByRole('rowheader', { name: 'Pilota_7' }).closest('tr')).toHaveAttribute('aria-current', 'true')
   const call = jest.mocked(fetch).mock.calls.find(([url]) => String(url).endsWith('/publish'))!
   const body = JSON.parse(String(call[1]?.body))
-  expect(body).toEqual({ rulesVersion: 2, token, alias: 'Pilota_7', consent: true, inputs: [{ t: 0, x: 240, y: 150 }] })
+  expect(body).toEqual({ rulesVersion: RULES_VERSION, token, alias: 'Pilota_7', consent: true, inputs: [{ t: 0, ...firstContact }] })
   expect(body).not.toHaveProperty('points')
 })
 test('hidden tabs interrupt competition and prevent publication', async () => {
@@ -54,6 +65,7 @@ test('hidden tabs interrupt competition and prevent publication', async () => {
 test('unsafe aliases are rejected without a publication request', async () => {
   await play()
   act(() => jest.advanceTimersByTime(30_100))
+  fireEvent.click(screen.getByRole('button', { name: 'Publicar resultado' }))
   fireEvent.change(screen.getByLabelText('Apodo (3–20 caracteres)'), { target: { value: '<script>' } })
   fireEvent.click(screen.getByRole('checkbox'))
   await act(async () => { fireEvent.submit(screen.getByRole('button', { name: 'Publicar resultado' }).closest('form')!) })
@@ -79,7 +91,7 @@ test('a challenge response cannot start a round after the tab became hidden', as
   fireEvent.click(screen.getByRole('button', { name: 'Salón de la fama' }))
   fireEvent.click(screen.getByRole('button', { name: 'Competir (30 s)' }))
   jest.spyOn(document, 'hidden', 'get').mockReturnValue(true)
-  await act(async () => { resolveChallenge(await response({ rulesVersion: 2, token, seed: 1, width: 480, height: 300 }) as Response) })
+  await act(async () => { resolveChallenge(await response({ rulesVersion: RULES_VERSION, token, seed: 1, ...board }) as Response) })
   expect(screen.getByRole('alert')).toHaveTextContent('La partida se ha interrumpido')
   expect(screen.queryByRole('button', { name: 'Devolver la pelota' })).not.toBeInTheDocument()
 })
@@ -99,6 +111,7 @@ test('the competitive countdown does not consume any of the thirty-second round'
   act(() => jest.advanceTimersByTime(29_900))
   expect(screen.queryByRole('button', { name: 'Publicar resultado' })).not.toBeInTheDocument()
   act(() => jest.advanceTimersByTime(200))
+  fireEvent.click(screen.getByRole('button', { name: 'Publicar resultado' }))
   expect(screen.getByRole('button', { name: 'Publicar resultado' })).toBeDisabled()
 })
 
@@ -117,7 +130,7 @@ test('hiding during competitive preparation cancels the countdown without starti
 
 test('a server with incompatible game rules cannot start a mismatched competitive round', async () => {
   jest.mocked(fetch).mockImplementation((url) => String(url).endsWith('/challenge')
-    ? response({ token, rulesVersion: 1, seed: 1, width: 480, height: 300 }) as ReturnType<typeof fetch>
+    ? response({ token, rulesVersion: 3, seed: 1, ...board }) as ReturnType<typeof fetch>
     : response({ entries: [] }) as ReturnType<typeof fetch>)
   mount()
   fireEvent.click(screen.getByRole('button', { name: 'Salón de la fama' }))
@@ -133,6 +146,6 @@ test('competitive paddle contact can return the ball without a pointer press on 
   await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Competir (30 s)' })) })
   act(() => jest.advanceTimersByTime(3000))
   const court = screen.getByRole('region', { name: 'Mesa de tenis de mesa de Joventut TT' })
-  fireEvent.pointerDown(court, { button: 0, clientX: 270, clientY: 150 })
+  fireEvent.pointerDown(court, { button: 0, clientX: firstContact.x + 30, clientY: firstContact.y })
   expect(screen.getByText('Puntos: 1')).toBeInTheDocument()
 })

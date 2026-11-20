@@ -535,6 +535,42 @@
       "replay": "Volver a practicar",
       "timed": "Jugar 30 segundos"
     },
+    "match": {
+      "title": "Contra la IA",
+      "start": "Jugar contra la IA",
+      "back": "Volver",
+      "options": "Opciones",
+      "pointsPerGame": "Puntos por partida",
+      "difficulty": {
+        "label": "Dificultad",
+        "easy": "Fácil",
+        "normal": "Normal",
+        "hard": "Difícil",
+        "description": {
+          "easy": "Pelota más lenta y más tiempo para devolver.",
+          "normal": "Ritmo intermedio.",
+          "hard": "Pelota más rápida y una IA que reacciona antes."
+        }
+      },
+      "instructions": "Devuelve tras el bote en tu lado. A {target} puntos, con dos de ventaja.",
+      "keyboard": "←/→ para dirigir, ↑ para liftado y ↓ para cortado.",
+      "shot": {
+        "label": "Tipo de golpe",
+        "flat": "Plano",
+        "topspin": "Liftado",
+        "backspin": "Cortado"
+      },
+      "playerScore": "Tú: {count}",
+      "opponentScore": "IA: {count}",
+      "won": "¡Has ganado!",
+      "lost": "La IA ha ganado",
+      "status": {
+        "rally": "En juego",
+        "return": "Devuelve ahora",
+        "player": "Punto para ti",
+        "opponent": "Punto para la IA"
+      }
+    },
     "menu": {
       "title": "Joventut TT",
       "hint": "Entrena tus reflejos con el Club Esportiu Joventut TT y elige tu reto.",
@@ -552,17 +588,27 @@
   },
   "sunHall": {
     "title": "Salón de la fama",
-    "rules": "Reto de tenis de mesa: 30 s, sin pausas ni cambios de ventana. Combos ×2 y ×3.",
-    "intro": "Representa al Joventut TT en el top 10 de devoluciones. Publicar tu resultado es opcional.",
+    "rules": "30 s, sin pausas ni cambios de ventana. Combos ×2 y ×3.",
+    "intro": "Publicar tu resultado es opcional.",
     "play": "Competir (30 s)",
     "preparing": "Preparando partida…",
     "optional": "¿Quieres publicar el resultado? Usa un apodo, sin datos personales.",
     "alias": "Apodo (3–20 caracteres)",
     "consent": "Acepto que mi apodo y resultado aparezcan públicamente en el Salón de la Fama.",
     "publish": "Publicar resultado",
+    "cancelPublish": "Cancelar",
     "publishing": "Publicando…",
-    "published": "Resultado publicado. Aparecerá en la lista si está entre los diez mejores.",
+    "published": "Resultado publicado.",
     "top": "Top 10 histórico",
+    "columns": {
+      "rank": "Puesto",
+      "alias": "Apodo",
+      "points": "Puntos",
+      "pointsShort": "Ptos.",
+      "accuracy": "Precisión",
+      "accuracyShort": "Prec.",
+      "streak": "Racha"
+    },
     "refresh": "Actualizar",
     "loading": "Cargando clasificación…",
     "empty": "Todavía no hay resultados. ¡Puedes estrenar el Salón!",

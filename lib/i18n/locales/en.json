@@ -533,6 +533,42 @@
       "replay": "Practice again",
       "timed": "Play 30 seconds"
     },
+    "match": {
+      "title": "Against AI",
+      "start": "Play against AI",
+      "back": "Back",
+      "options": "Options",
+      "pointsPerGame": "Points per game",
+      "difficulty": {
+        "label": "Difficulty",
+        "easy": "Easy",
+        "normal": "Normal",
+        "hard": "Hard",
+        "description": {
+          "easy": "A slower ball and more time to return it.",
+          "normal": "Medium pace.",
+          "hard": "A faster ball and quicker AI reactions."
+        }
+      },
+      "instructions": "Return the ball after it bounces on your side. Play to {target}, win by two.",
+      "keyboard": "←/→ to aim, ↑ for topspin, ↓ for backspin.",
+      "shot": {
+        "label": "Shot type",
+        "flat": "Flat",
+        "topspin": "Topspin",
+        "backspin": "Backspin"
+      },
+      "playerScore": "You: {count}",
+      "opponentScore": "AI: {count}",
+      "won": "You win!",
+      "lost": "The AI wins",
+      "status": {
+        "rally": "In play",
+        "return": "Return now",
+        "player": "Point for you",
+        "opponent": "Point for the AI"
+      }
+    },
     "menu": {
       "title": "Joventut TT",
       "hint": "Train your reflexes with Club Esportiu Joventut TT and choose your challenge.",
@@ -550,17 +586,27 @@
   },
   "sunHall": {
     "title": "Hall of Fame",
-    "rules": "Table tennis challenge: 30 s, no pauses or window changes. Combos ×2 and ×3.",
-    "intro": "Represent Joventut TT in the top 10 return challenge. Publishing your result is optional.",
+    "rules": "30 s, no pauses or window changes. Combos ×2 and ×3.",
+    "intro": "Publishing your result is optional.",
     "play": "Compete (30 s)",
     "preparing": "Preparing round…",
     "optional": "Want to publish your result? Use a nickname without personal details.",
     "alias": "Nickname (3–20 characters)",
     "consent": "I agree to show my nickname and result publicly in the Hall of Fame.",
     "publish": "Publish result",
+    "cancelPublish": "Cancel",
     "publishing": "Publishing…",
-    "published": "Result published. It will appear in the list if it is among the top ten.",
+    "published": "Result published.",
     "top": "All-time top 10",
+    "columns": {
+      "rank": "Rank",
+      "alias": "Nickname",
+      "points": "Points",
+      "pointsShort": "Pts",
+      "accuracy": "Accuracy",
+      "accuracyShort": "Acc.",
+      "streak": "Streak"
+    },
     "refresh": "Refresh",
     "loading": "Loading leaderboard…",
     "empty": "No results yet. You can be the first!",

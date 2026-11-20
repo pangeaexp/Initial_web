@@ -533,6 +533,42 @@
       "replay": "Tornar a practicar",
       "timed": "Jugar 30 segons"
     },
+    "match": {
+      "title": "Contra la IA",
+      "start": "Jugar contra la IA",
+      "back": "Tornar",
+      "options": "Opcions",
+      "pointsPerGame": "Punts per partida",
+      "difficulty": {
+        "label": "Dificultat",
+        "easy": "Fàcil",
+        "normal": "Normal",
+        "hard": "Difícil",
+        "description": {
+          "easy": "Pilota més lenta i més temps per tornar-la.",
+          "normal": "Ritme intermedi.",
+          "hard": "Pilota més ràpida i una IA que reacciona abans."
+        }
+      },
+      "instructions": "Torna la pilota després del bot al teu costat. A {target} punts, amb dos d’avantatge.",
+      "keyboard": "←/→ per dirigir, ↑ per al liftat i ↓ per al tallat.",
+      "shot": {
+        "label": "Tipus de cop",
+        "flat": "Pla",
+        "topspin": "Liftat",
+        "backspin": "Tallat"
+      },
+      "playerScore": "Tu: {count}",
+      "opponentScore": "IA: {count}",
+      "won": "Has guanyat!",
+      "lost": "La IA ha guanyat",
+      "status": {
+        "rally": "En joc",
+        "return": "Torna la pilota ara",
+        "player": "Punt per a tu",
+        "opponent": "Punt per a la IA"
+      }
+    },
     "menu": {
       "title": "Joventut TT",
       "hint": "Entrena els teus reflexos amb el Club Esportiu Joventut TT i tria el teu repte.",
@@ -550,17 +586,27 @@
   },
   "sunHall": {
     "title": "Saló de la fama",
-    "rules": "Repte de tennis de taula: 30 s, sense pauses ni canvis de finestra. Combos ×2 i ×3.",
-    "intro": "Representa el Joventut TT al top 10 de devolucions. Publicar el resultat és opcional.",
+    "rules": "30 s, sense pauses ni canvis de finestra. Combos ×2 i ×3.",
+    "intro": "Publicar el resultat és opcional.",
     "play": "Competir (30 s)",
     "preparing": "Preparant la partida…",
     "optional": "Vols publicar el resultat? Fes servir un àlies, sense dades personals.",
     "alias": "Àlies (3–20 caràcters)",
     "consent": "Accepto que el meu àlies i resultat apareguin públicament al Saló de la Fama.",
     "publish": "Publicar resultat",
+    "cancelPublish": "Cancel·lar",
     "publishing": "Publicant…",
-    "published": "Resultat publicat. Apareixerà a la llista si és entre els deu millors.",
+    "published": "Resultat publicat.",
     "top": "Top 10 històric",
+    "columns": {
+      "rank": "Posició",
+      "alias": "Àlies",
+      "points": "Punts",
+      "pointsShort": "Pts",
+      "accuracy": "Precisió",
+      "accuracyShort": "Prec.",
+      "streak": "Ratxa"
+    },
     "refresh": "Actualitzar",
     "loading": "Carregant la classificació…",
     "empty": "Encara no hi ha resultats. Pots estrenar el Saló!",

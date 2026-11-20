@@ -7,6 +7,7 @@ import { TranslationProvider } from '@/lib/i18n'
 import dictionary from '@/lib/i18n/locales/es.json'
 import { ACHIEVEMENTS_KEY } from '@/lib/sun-game-achievements'
 import { LEADERBOARD_KEY } from '@/lib/sun-game-leaderboard'
+import { projectTablePoint, TABLE_HALF_LENGTH, TABLE_HEIGHT } from '@/lib/table-tennis'
 
 const recordKey = 'cejoventut.sun-game.best.v1'
 const mount = () => render(
@@ -27,6 +28,41 @@ const pointerContact = (ball: HTMLElement, button = 0) => {
   const values = ball.style.transform.match(/translate3d\(([^p]+)px,\s*([^p]+)px/)
   fireEvent.pointerDown(ball, { button, clientX: Number(values![1]) + 22, clientY: Number(values![2]) + 22 })
 }
+
+test.each([11, 21])('an AI match to %i points can pause and replay without saving a challenge score', (target) => {
+  jest.spyOn(Math, 'random').mockReturnValue(0.5)
+  const write = jest.spyOn(Storage.prototype, 'setItem')
+  mount()
+  fireEvent.click(screen.getByRole('button', { name: 'Jugar' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Contra la IA' }))
+  expect(screen.getByRole('radio', { name: 'Normal' })).toBeChecked()
+  expect(screen.getByRole('radio', { name: '11' })).toBeChecked()
+  fireEvent.click(screen.getByRole('radio', { name: String(target) }))
+  fireEvent.click(screen.getByRole('button', { name: 'Jugar contra la IA' }))
+  completeCountdown()
+  const instructions = `Devuelve tras el bote en tu lado. A ${target} puntos, con dos de ventaja.`
+  expect(screen.getByText(instructions)).toBeInTheDocument()
+  expect(screen.getByText('Tú: 0')).toBeInTheDocument()
+  expect(screen.getByText('IA: 0')).toBeInTheDocument()
+  act(() => jest.advanceTimersByTime(850))
+  expect(screen.getByText('Devuelve ahora')).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Pausa' }))
+  act(() => jest.advanceTimersByTime(3000))
+  expect(screen.getByText('IA: 0')).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Continuar partida' }))
+  act(() => jest.advanceTimersByTime(1000))
+  expect(screen.getByText('Punto para la IA')).toBeInTheDocument()
+  expect(screen.getByText('IA: 1')).toBeInTheDocument()
+  act(() => jest.advanceTimersByTime(90_000))
+  expect(screen.getByRole('heading', { name: 'La IA ha ganado' })).toBeInTheDocument()
+  expect(screen.getByText(`IA: ${target}`)).toBeInTheDocument()
+  expect(write).not.toHaveBeenCalled()
+  fireEvent.click(screen.getByRole('button', { name: 'Volver a jugar' }))
+  completeCountdown()
+  expect(screen.getByText(instructions)).toBeInTheDocument()
+  expect(screen.getByText('Tú: 0')).toBeInTheDocument()
+  expect(screen.getByText('IA: 0')).toBeInTheDocument()
+})
 
 // jsdom does not provide PointerEvent; MouseEvent exposes the button field here.
 beforeAll(() => { window.PointerEvent = MouseEvent as typeof PointerEvent })
@@ -144,6 +180,18 @@ test('starts at zero, scores repeated catches, and keeps the ball in play', () =
   expect(screen.getByRole('button', { name: 'Devolver la pelota' })).toBeInTheDocument()
 })
 
+test.each(['Practicar', 'Partida de 30 segundos'])('%s accepts a late return with the paddle parked at the baseline', (name) => {
+  jest.spyOn(Math, 'random').mockReturnValue(0.5)
+  mount()
+  chooseMode(name)
+  const court = screen.getByRole('region', { name: 'Mesa de tenis de mesa de Joventut TT' })
+  const { x, y } = projectTablePoint([0, TABLE_HEIGHT, -TABLE_HALF_LENGTH], window.innerWidth, Math.max(160, window.innerHeight - 200))
+  fireEvent.pointerMove(court, { clientX: x, clientY: y })
+  act(() => jest.advanceTimersByTime(1620))
+  fireEvent.pointerDown(court, { button: 0, clientX: x, clientY: y })
+  expect(screen.getByText('Devoluciones: 1')).toBeInTheDocument()
+})
+
 test('paddle returns stay on the branded table and background contacts count as a single miss', () => {
   jest.spyOn(Math, 'random').mockReturnValue(0.5)
   mount()
@@ -151,7 +199,7 @@ test('paddle returns stay on the branded table and background contacts count as 
   const court = screen.getByRole('region', { name: 'Mesa de tenis de mesa de Joventut TT' })
   const ball = within(court).getByRole('button', { name: 'Devolver la pelota' })
   expect(ball.querySelector('[data-table-tennis-ball]')).toBeInTheDocument()
-  act(() => jest.advanceTimersByTime(200))
+  act(() => jest.advanceTimersByTime(1620))
   const y = () => Number(ball.style.transform.match(/translate3d\([^,]+,\s*([^p]+)px/)![1])
   const beforeReturn = y()
   fireEvent.click(ball, { detail: 0 })
@@ -182,7 +230,7 @@ test('a contact from the paddle face outside the ball button still returns the b
   const court = screen.getByRole('region', { name: 'Mesa de tenis de mesa de Joventut TT' })
   const ball = screen.getByRole('button', { name: 'Devolver la pelota' })
   const values = ball.style.transform.match(/translate3d\(([^p]+)px,\s*([^p]+)px/)!
-  fireEvent.pointerDown(court, { button: 0, clientX: Number(values[1]) + 22 + 30, clientY: Number(values[2]) + 22 })
+  fireEvent.pointerDown(court, { button: 0, clientX: Number(values[1]) + 22 + 26, clientY: Number(values[2]) + 22 })
   expect(screen.getByText('Devoluciones: 1')).toBeInTheDocument()
   expect(screen.getByText('Puntos: 1')).toBeInTheDocument()
 })
@@ -248,7 +296,7 @@ test('still plays and finishes when browser storage is unavailable', () => {
   catchBall()
   act(() => jest.advanceTimersByTime(30_100))
   expect(screen.getByText('¡Partida terminada!')).toBeInTheDocument()
-  expect(screen.getAllByText('Récord: 1')).toHaveLength(2)
+  expect(screen.getByText('Récord: 1')).toBeVisible()
 })
 
 test('awards combo bonuses at five and ten hits and caps the multiplier', () => {
@@ -317,7 +365,7 @@ test('time bar counts down and announces the final five seconds only while playi
   expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '5')
   expect(screen.getByText('¡Últimos 5 segundos!')).toBeInTheDocument()
   act(() => jest.advanceTimersByTime(5_000))
-  expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '0')
+  expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
   expect(screen.queryByText('¡Últimos 5 segundos!')).not.toBeInTheDocument()
   expect(screen.getByText('Precisión: 0%')).toBeInTheDocument()
   expect(screen.queryByText('¡Nuevo récord!')).not.toBeInTheDocument()
@@ -336,12 +384,14 @@ test('sound can be muted without breaking a combo and stays muted on replay', ()
   expect(HTMLMediaElement.prototype.play).toHaveBeenCalledTimes(1)
   expect(screen.getByText('Peloteo: 2 · ×1')).toBeInTheDocument()
   act(() => jest.advanceTimersByTime(30_100))
+  expect(screen.getByRole('button', { name: 'Sonido del juego' })).toHaveAttribute('aria-pressed', 'false')
   fireEvent.click(screen.getByRole('button', { name: 'Volver a jugar' }))
   completeCountdown()
-  expect(sound).toHaveAttribute('aria-pressed', 'false')
+  const replaySound = screen.getByRole('button', { name: 'Sonido del juego' })
+  expect(replaySound).toHaveAttribute('aria-pressed', 'false')
   catchBall()
   expect(HTMLMediaElement.prototype.play).toHaveBeenCalledTimes(1)
-  fireEvent.click(sound)
+  fireEvent.click(replaySound)
   catchBall()
   expect(HTMLMediaElement.prototype.play).toHaveBeenCalledTimes(2)
 })
